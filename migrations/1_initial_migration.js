@@ -51,66 +51,39 @@ let wmatic_quick_addresses = [
 const testAdminAddress = '0x3eCBE3F53D3DeAebEBb4336Aa269afdff23da3FA'
 
 module.exports = async function (deployer, network, accounts) {
-  //if it's not test network
-  // if(deployer.network != 'ganache' || deployer.network != 'develop'){
-    //deploy contracts
-    // await deployer.deploy(Token);
-    // await deployer.deploy(MasterChef, adminAddress, 0, Token.address)
-    // await deployer.deploy(Staker, Token.address, adminAddress, MasterChef.address)
-    //
-    // //mint 1.3M tokens
-    // const tokenInstance = await Token.deployed();
-    // await tokenInstance.mint(adminAddress, '1300000000000000000000000').sendTransaction()
+  // deploy contracts
+  await deployer.deploy(Token);
+  await deployer.deploy(MasterChef, adminAddress, 0, Token.address)
+  await deployer.deploy(Staker, Token.address, adminAddress, MasterChef.address)
 
-    //transfer token ownership
-    // await tokenInstance.transferOwnership(MasterChef.address).sendTransaction()
+  //mint 1.3M tokens
+  const tokenInstance = await Token.deployed();
+  await tokenInstance.mint(adminAddress, '1300000000000000000000000').sendTransaction()
 
-    // WETH-WBTC vault
-    // await deployer.deploy(
-    //   SushiVault, weth_wbtc_addresses, 3, false, true, sushiEarnedToCub,
-    //   [sushiEarned, wmatic, weth_wbtc_addresses[5]], [sushiEarned, wmatic, weth_wbtc_addresses[6]],
-    //   [weth_wbtc_addresses[5], wmatic, sushiEarned], [weth_wbtc_addresses[6], wmatic, sushiEarned],
-    //   1000, 0, 9990, 10000, govAddress
-    // )
+  // transfer token ownership
+  await tokenInstance.transferOwnership(MasterChef.address).sendTransaction()
 
-    // WETH-DAI vault
-    // await deployer.deploy(
-    //   SushiVault, weth_dai_addresses, 5, false, true, sushiEarnedToCub,
-    //   [sushiEarned, wmatic, weth_dai_addresses[5]], [sushiEarned, wmatic, weth_dai_addresses[6]],
-    //   [weth_dai_addresses[5], wmatic, sushiEarned], [weth_dai_addresses[6], wmatic, sushiEarned],
-    //   1000, 0, 9990, 10000, govAddress
-    // )
+  // WETH-WBTC vault
+  await deployer.deploy(
+    SushiVault, weth_wbtc_addresses, 3, false, true, sushiEarnedToCub,
+    [sushiEarned, wmatic, weth_wbtc_addresses[5]], [sushiEarned, wmatic, weth_wbtc_addresses[6]],
+    [weth_wbtc_addresses[5], wmatic, sushiEarned], [weth_wbtc_addresses[6], wmatic, sushiEarned],
+    1000, 0, 9990, 10000, govAddress
+  )
 
-    // WMATIC-QUICK vault
-    // await deployer.deploy(
-    //   QuickVault, wmatic_quick_addresses, false, true, quickEarnedToCub,
-    //   [quickEarned, wmatic, wmatic_quick_addresses[5]], [quickEarned, wmatic, wmatic_quick_addresses[6]],
-    //   [wmatic_quick_addresses[5], wmatic, quickEarned], [wmatic_quick_addresses[6], wmatic, quickEarned],
-    //   1000, 0, 9990, 10000, govAddress
-    // )
-  // } else {
-    //Test contracts
-    await deployer.deploy(Token);
-    await deployer.deploy(MasterChef, deadAddress, 0, Token.address)
-    await deployer.deploy(Staker, Token.address, accounts[0], MasterChef.address)
+  // WETH-DAI vault
+  await deployer.deploy(
+    SushiVault, weth_dai_addresses, 5, false, true, sushiEarnedToCub,
+    [sushiEarned, wmatic, weth_dai_addresses[5]], [sushiEarned, wmatic, weth_dai_addresses[6]],
+    [weth_dai_addresses[5], wmatic, sushiEarned], [weth_dai_addresses[6], wmatic, sushiEarned],
+    1000, 0, 9990, 10000, govAddress
+  )
 
-    //mint token & transfer ownership of the token
-    const tokenInstance = await Token.deployed();
-    await tokenInstance.mint(accounts[0], '1300000000000000000000000')
-    await tokenInstance.transferOwnership(MasterChef.address)
-
-    //change pealty address
-    const masterChefInstance = await MasterChef.deployed();
-    await masterChefInstance.setPenaltyAddress(Staker.address);
-
-    //depoly mock token
-    await deployer.deploy(MockERC20);
-
-    //deploy mock vault, only care about wantAddress[4](mockToken) and lionsDenAddress[2](MasterChef)
-    let mockVaultAddresses = Array.apply(null, Array(12)).map(_ => deadAddress)
-    mockVaultAddresses[2] = MasterChef.address
-    mockVaultAddresses[4] = MockERC20.address
-    await deployer.deploy(MockSushiVault, mockVaultAddresses, 0, false, true, [], [], [], [], [], 1000, 0, 9990, 10000, accounts[0])
-
-  // }
+  // WMATIC-QUICK vault
+  await deployer.deploy(
+    QuickVault, wmatic_quick_addresses, false, true, quickEarnedToCub,
+    [quickEarned, wmatic, wmatic_quick_addresses[5]], [quickEarned, wmatic, wmatic_quick_addresses[6]],
+    [wmatic_quick_addresses[5], wmatic, quickEarned], [wmatic_quick_addresses[6], wmatic, quickEarned],
+    1000, 0, 9990, 10000, govAddress
+  )
 };
