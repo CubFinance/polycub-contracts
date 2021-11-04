@@ -3,3 +3,4 @@ cache/
 node_modules/
 hardhat.config.js
 truffle-config.js
+build/
