@@ -89,13 +89,13 @@ describe("MasterChef", function () {
     expect(rewards / Math.pow(10, 16)).to.equal(expectedReward / Math.pow(10, 16))
   });
 
-  it("shoud addPendingClaims", async function () {
+  it("shoud collectPendingRewards", async function () {
     let tokensPerBlock = await masterChef.tokensPerBlock()
     let rewards = await masterChef.pendingTokens(0, accounts[0].address)
 
     let pendingRewards = await masterChef.pendingTokens(0, accounts[0].address)
 
-    let pendingClaimsTx = await masterChef.addPendingClaims()
+    let pendingClaimsTx = await masterChef.collectPendingRewards()
     await pendingClaimsTx.wait()
 
     let pendingLength = await masterChef.pendingLength(accounts[0].address)
@@ -115,7 +115,7 @@ describe("MasterChef", function () {
 
     let lockedTokensBeforeClaim = await masterChef.lockedTokens(accounts[0].address)
 
-    let claimTx = await masterChef.claim(true)
+    let claimTx = await masterChef.claim(true, 0)
     claimTx.wait()
 
     let lockedTokensAfterClaim = await masterChef.lockedTokens(accounts[0].address)
@@ -136,8 +136,8 @@ describe("MasterChef", function () {
   //   let beforePenaltyBalance = await token.balanceOf(staker.address)
   //
   //   await mineBlocks(10)
-  //   let addPendingClaimTx = await masterChef.addPendingClaims()
-  //   addPendingClaimTx.wait()
+  //   let addPendingRewardsTx = await masterChef.collectPendingRewards()
+  //   addPendingRewardsTx.wait()
   //
   //   let lockedTokensBeforeClaim = await masterChef.lockedTokens(accounts[0].address)
   //   let unlockedTokensBeforeClaim = await masterChef.unlockedTokens(accounts[0].address)
@@ -145,7 +145,7 @@ describe("MasterChef", function () {
   //   let lockupPeriod = await masterChef.LOCKUP_PERIOD_BLOCKS()
   //   await mineBlocks(lockupPeriod + 1);
   //
-  //   let claimTx = await masterChef.claim(true)
+  //   let claimTx = await masterChef.claim(true, 0)
   //   claimTx.wait()
   //
   //   let lockedTokensAfterClaim = await masterChef.lockedTokens(accounts[0].address)
