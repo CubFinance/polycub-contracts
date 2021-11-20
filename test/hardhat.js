@@ -161,30 +161,30 @@ describe("MasterChef", function () {
   //   expect(userBalance.toString()).to.equal(beforeUserBalance.add(lockedTokensBeforeClaim).toString())
   // });
 
-  it("shoud update emission schedule", async function () {
-    await init() //start with clean state
-
-    let startEmissionRate = await masterChef.tokensPerBlock()
-    let blockPerDay = await masterChef.blockPerDay()
-
-    let addPoolTx = await masterChef.add(1000, mockERC20.address, true, mockVault.address);
-    await addPoolTx.wait();
-
-    check emissions for first month (not checking first week)
-    for (i = 0; i < 3; i++){
-      //change contract to use uint blockPerWeek = blockPerDay / 10; to speed up the testing
-      await mineBlocks(blockPerDay + 1)
-
-      //call it twice, for some reason it's not updated if it's only once
-      let updatePoolTx = await masterChef.updatePool(0);
-      await updatePoolTx.wait()
-      let updatePoolTx1 = await masterChef.updatePool(0);
-      await updatePoolTx1.wait()
-
-      let emissionRate = await masterChef.tokensPerBlock()
-      let expectedEmission = await masterChef.emissionScheduleArray(i + 1)
-
-      expect(emissionRate.toString()).is.equal(expectedEmission[0].toString())
-    }
-  });
+  // it("shoud update emission schedule", async function () {
+  //   await init() //start with clean state
+  //
+  //   let startEmissionRate = await masterChef.tokensPerBlock()
+  //   let blockPerDay = await masterChef.blockPerDay()
+  //
+  //   let addPoolTx = await masterChef.add(1000, mockERC20.address, true, mockVault.address);
+  //   await addPoolTx.wait();
+  //
+  //   check emissions for first month (not checking first week)
+  //   for (i = 0; i < 3; i++){
+  //     //change contract to use uint blockPerWeek = blockPerDay / 10; to speed up the testing
+  //     await mineBlocks(blockPerDay + 1)
+  //
+  //     //call it twice, for some reason it's not updated if it's only once
+  //     let updatePoolTx = await masterChef.updatePool(0);
+  //     await updatePoolTx.wait()
+  //     let updatePoolTx1 = await masterChef.updatePool(0);
+  //     await updatePoolTx1.wait()
+  //
+  //     let emissionRate = await masterChef.tokensPerBlock()
+  //     let expectedEmission = await masterChef.emissionScheduleArray(i + 1)
+  //
+  //     expect(emissionRate.toString()).is.equal(expectedEmission[0].toString())
+  //   }
+  // });
 });
