@@ -24,10 +24,8 @@ contract MasterChef is Ownable, ReentrancyGuard {
 
     /// @notice Info of each user.
     struct UserInfo {
-        /// @Notice How many LP tokens the user has provided.
-        uint256 shares;
-        /// @@notice Reward debt. See explanation below.
-        uint256 rewardDebt;
+        uint256 shares; //How many LP tokens the user has provided.
+        uint256 rewardDebt; //Reward debt. See explanation below.
 
         // We do some fancy math here. Basically, any point in time, the amount of CUB
         // entitled to a user but is pending to be distributed is:
@@ -44,16 +42,11 @@ contract MasterChef is Ownable, ReentrancyGuard {
 
     /// @notice Info about each pool
     struct PoolInfo {
-        /// @notice Address of the want token.
-        IERC20 want;
-        /// @notice How many allocation points assigned to this pool.
-        uint256 allocPoint;
-        /// @notice Last block number that reward token distribution occurs.
-        uint256 lastRewardBlock;
-        /// @notice Accumulated tokens per share, times 1e12. See below.
-        uint256 accTokensPerShare;
-        /// @notice Strategy vault address that will auto compound want tokens
-        address strat;
+        IERC20 want; //Address of the want token.
+        uint256 allocPoint; //How many allocation points assigned to this pool.
+        uint256 lastRewardBlock; //Last block number that reward token distribution occurs.
+        uint256 accTokensPerShare; //Accumulated tokens per share, times 1e12.
+        address strat; //Strategy vault address that will auto compound want tokens
     }
 
     /// @notice Number of tokens issued per block
@@ -135,19 +128,28 @@ contract MasterChef is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @notice Helper function return length of the valiators array.
-     * @return Length of the validators array
+     * @notice Helper function return length of the poolInfo array.
+     * @return Length of the poolInfo array
      */
     function poolLength() external view returns (uint256) {
         return poolInfo.length;
     }
 
+    /// @notice A record of already existing want token addresses
     mapping(IERC20 => bool) public poolExistence;
+    /// @notice A modifier to prevent same want token being added more than once
     modifier nonDuplicated(IERC20 _want) {
         require(poolExistence[_want] == false, "nonDuplicated: duplicated");
         _;
     }
 
+    /**
+     * @notice Function to add new pool, can be called  only by owner
+     * @param _allocPoint Number of allocation points
+     * @param _want Address of the wanted token
+     * @param _withUpdate Boolean, if we want to update all pools first
+     * @param _strat Address of startegy vault contract
+     */
     function add(
         uint256 _allocPoint,
         IERC20 _want,
@@ -173,7 +175,12 @@ contract MasterChef is Ownable, ReentrancyGuard {
         poolExistence[_want] = true;
     }
 
-    // Update the given pool's reward token allocation point. Can only be called by the owner.
+    /**
+     * @notice Function to update the given pool's reward token allocation point. Can only be called by the owner.
+     * @param _pid PID of the pool we want to update
+     * @param _allocPoint Number of allocation points
+     * @param _withUpdate Boolean, if we want to update all pools first
+     */
     function set(
         uint256 _pid,
         uint256 _allocPoint,
@@ -188,7 +195,10 @@ contract MasterChef is Ownable, ReentrancyGuard {
         poolInfo[_pid].allocPoint = _allocPoint;
     }
 
-    // Return reward multiplier over the given _from to _to block.
+    /**
+     * @notice Helper function return difference between 2 numbers
+     * @return Difference between 2 numbers
+     */
     function getMultiplier(uint256 _from, uint256 _to)
         public
         pure
@@ -197,9 +207,11 @@ contract MasterChef is Ownable, ReentrancyGuard {
         return _to.sub(_from);
     }
 
-    // see pending tokens that have not entered waiting period yet (user need to call updatePool())
-    // use lockedTokens & unlockedTokens to see pending tokens that are already in the unlock queue or were already unlocked
-    // View function to see pending rewards tokens on frontend.
+
+    /**
+     * @notice View function to see pending tokens that have not entered waiting period yet (user need to call collectPendingRewards(), deposit(), withdraw())
+     * @return Number of pending tokens not yet int the waiting period
+     */
     function pendingTokens(uint256 _pid, address _user)
         external
         view
@@ -223,7 +235,10 @@ contract MasterChef is Ownable, ReentrancyGuard {
         return user.shares.mul(accTokensPerShare).div(1e12).sub(user.rewardDebt);
     }
 
-    // View function to see staked Want tokens on frontend.
+    /**
+     * @notice View function to see tokens staked in the strategy vault on the frontend
+     * @return Number of tokens staked in the strategy vault
+     */
     function stakedWantTokens(uint256 _pid, address _user)
         external
         view
@@ -241,7 +256,8 @@ contract MasterChef is Ownable, ReentrancyGuard {
         return user.shares.mul(wantLockedTotal).div(sharesTotal);
     }
 
-    // Update reward variables for all pools. Be careful of gas spending!
+
+    /// @notice Function to update all pools
     function massUpdatePools() public {
         uint256 length = poolInfo.length;
         for (uint256 pid = 0; pid < length; ++pid) {
@@ -249,10 +265,13 @@ contract MasterChef is Ownable, ReentrancyGuard {
         }
     }
 
-    // Update reward variables of the given pool to be up-to-date.
+    /**
+     * @notice Function to update reward variables of the given pool to be up-to-date.
+     * @param _pid PID of the pool we want to update
+     */
     function updatePool(uint256 _pid) public {
-        //update emission schedule if we are not at the last yet
-        //only first month we use emissionSchedule
+        //update emission schedule if needed
+        //only for the first month we use emissionSchedule
         if (block.number < startBlock + (blockPerDay * 7 * 4)){
           if (emissionScheduleArray.length >= emissionScheduleLatest + 1){
             //update emission schedule
@@ -291,7 +310,6 @@ contract MasterChef is Ownable, ReentrancyGuard {
 
         if (totalIssuedTokens + tokensReward <= maxIssued){
             totalIssuedTokens += tokensReward;
-            //mint new token
             IToken(rewardToken).mint(address(this), tokensReward);
         } else if (totalIssuedTokens < maxIssued && totalIssuedTokens + tokensReward > maxIssued) {
             totalIssuedTokens += tokensReward;
@@ -304,7 +322,11 @@ contract MasterChef is Ownable, ReentrancyGuard {
         pool.lastRewardBlock = block.number;
     }
 
-    // Safe reward tokens transfer function, just in case if rounding error causes pool to not have enough
+    /**
+     * @notice Safe reward tokens transfer function, just in case if rounding error causes pool to not have enough
+     * @param _to  Address to send tokens to
+     * @param _tokenAmount Amount of tokens to send
+     */
     function safeTokensTransfer(address _to, uint256 _tokenAmount) internal {
         uint256 tokenBal = IERC20(rewardToken).balanceOf(address(this));
         bool transferSuccess = false;
@@ -316,7 +338,9 @@ contract MasterChef is Ownable, ReentrancyGuard {
         require(transferSuccess, "safeTokensTransfer: transfer failed");
     }
 
-    //add tokens to pending queue, for 1k claims, ~6M gas is used when claimimg them
+    /**
+     * @notice Add tokens to pending queue, unlock countdown will start now
+     */
     function collectPendingRewards() external {
         uint256 totalPending;
         for (uint256 i = 0; i < poolInfo.length; i++){
@@ -332,11 +356,12 @@ contract MasterChef is Ownable, ReentrancyGuard {
         pending[msg.sender].push(pendingRewards(totalPending, block.number + lockupPeriodBlocks));
     }
 
-    //claim locked rewards
-    //if _all is true, unlocked tokens will also be claimed (but 50% will be sent to penalty address)
-    //in case if gas limit is lower than gas required to claim entire array of pendingRewards, use _limt
-    //to claim just limited number of pendingRewards
-    function claim(bool _all, uint256 _limit) external nonReentrant {
+    /**
+     * @notice Claim tokens from pending queue (for 1k pendingRewards, ~6M gas is used when claimimg them)
+     * @param _includeLocked Claim locked tokens too and only receive 50% of them, the rest is sent to penalty address
+     * @param _limit In case if gas limit is lower than gas required to claim entire array of pendingRewards, use _limit to claim just a limited number of pendingRewards
+     */
+    function claim(bool _includeLocked, uint256 _limit) external nonReentrant {
       uint256 sumLocked;
       uint256 sumUnlocked;
 
@@ -345,7 +370,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
       for (uint256 i = 0; i < _limit; i++){
         if (pending[msg.sender][i].unlockBlock <= block.number){
           sumUnlocked += pending[msg.sender][i].amount;
-          if (!_all){
+          if (!_includeLocked){
             pending[msg.sender][i] = pending[msg.sender][pending[msg.sender].length-1];
             pending[msg.sender].pop();
           }
@@ -354,11 +379,11 @@ contract MasterChef is Ownable, ReentrancyGuard {
         }
       }
 
-      if (_all){
+      if (_includeLocked){
         uint256 totalAmount = sumUnlocked + sumLocked.div(2);
         uint256 penalty = sumLocked.div(2);
 
-        //delete array
+        //delete entire array
         for (uint256 i = 0; i < _limit; i++){
             pending[msg.sender].pop();
         }
@@ -372,7 +397,10 @@ contract MasterChef is Ownable, ReentrancyGuard {
       Claim(msg.sender, sumUnlocked + sumLocked.div(2), sumLocked.div(2));
     }
 
-    //get sum of all pending unlocked tokens
+    /**
+     * @notice Get the sum of all pending unlocked tokens
+     * @return Number of unlocked tokens that can be claimed without penalty
+     */
     function unlockedTokens(address _user) external view returns (uint256) {
       uint256 sumUnlocked;
       for (uint256 i = 0; i < pending[_user].length; i++){
@@ -384,7 +412,10 @@ contract MasterChef is Ownable, ReentrancyGuard {
       return sumUnlocked;
     }
 
-    //get sum of all pending locked tokens
+    /**
+     * @notice Get the sum of all pending locked tokens
+     * @return Number of locked tokens that will require paying 50% penalty if claimed
+     */
     function lockedTokens(address _user) external view returns (uint256) {
       uint256 sumLocked = 0;
       for (uint256 i = 0; i < pending[_user].length; i++){
@@ -396,11 +427,20 @@ contract MasterChef is Ownable, ReentrancyGuard {
       return sumLocked;
     }
 
+    /**
+     * @notice Get the number of pendingRewards not claimed yet
+     * @param user Address of the user
+     * @return Length of pending array
+     */
     function pendingLength(address user) external view returns (uint256) {
       return pending[user].length;
     }
 
-    // Want tokens moved from user -> This contract -> Strategy (compounding)
+    /**
+     * @notice Deposit Want tokens from user -> This contract -> Strategy (compounding)
+     * @param _pid PID of the pool
+     * @param _wantAmt Amount of tokens to deposit
+     */
     function deposit(uint256 _pid, uint256 _wantAmt) public nonReentrant {
         updatePool(_pid);
         PoolInfo storage pool = poolInfo[_pid];
@@ -431,7 +471,11 @@ contract MasterChef is Ownable, ReentrancyGuard {
         emit Deposit(msg.sender, _pid, _wantAmt);
     }
 
-    // Withdraw LP tokens from MasterChef.
+    /**
+     * @notice Withdraw LP tokens from Strategy (compounding) -> This contract -> user
+     * @param _pid PID of the pool
+     * @param _wantAmt Amount of tokens to withdraw
+     */
     function withdraw(uint256 _pid, uint256 _wantAmt) public nonReentrant {
         updatePool(_pid);
 
@@ -445,7 +489,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
         require(user.shares > 0, "user.shares is 0");
         require(sharesTotal > 0, "sharesTotal is 0");
 
-        // Withdraw pending CUB
+        //collect rewards and add the to pending queue
         uint256 _pending =
             user.shares.mul(pool.accTokensPerShare).div(1e12).sub(
                 user.rewardDebt
@@ -479,11 +523,18 @@ contract MasterChef is Ownable, ReentrancyGuard {
         emit Withdraw(msg.sender, _pid, _wantAmt);
     }
 
+    /**
+     * @notice Withdraw all tokens from the pool
+     * @param _pid PID of the pool
+     */
     function withdrawAll(uint256 _pid) public nonReentrant {
         withdraw(_pid, uint256(-1));
     }
 
-    // Withdraw without caring about rewards. EMERGENCY ONLY.
+    /**
+     * @notice Withdraw all tokens from the pool, without caring about rewards. EMERGENCY ONLY.
+     * @param _pid PID of the pool
+     */
     function emergencyWithdraw(uint256 _pid) public nonReentrant {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][msg.sender];
@@ -501,6 +552,11 @@ contract MasterChef is Ownable, ReentrancyGuard {
         user.rewardDebt = 0;
     }
 
+    /**
+     * @notice Function to transfer token from this contract, in case they are accidentally sent here. Only callable by owner!
+     * @param _token Address of the token to transfer
+     * @param _amount Amount to transfer
+     */
     function rescueTokens(address _token, uint256 _amount)
         public
         onlyOwner
@@ -509,6 +565,12 @@ contract MasterChef is Ownable, ReentrancyGuard {
         IERC20(_token).safeTransfer(msg.sender, _amount);
     }
 
+    /**
+     * @notice Change emission schedule by owner.
+     * @param _startBlock Block number from where inflation schedule is counted, if 0, it's current block number
+     * @param _emissionAmounts Array of emission amounts
+     * @param _emissionDelays Array of delays for each amount
+     */
     function updateEmissionRateSchedule(uint256 _startBlock, uint256[] calldata _emissionAmounts, uint256[] calldata _emissionDelays) public onlyOwner {
         if (_startBlock == 0) _startBlock = block.number;
 
@@ -523,6 +585,11 @@ contract MasterChef is Ownable, ReentrancyGuard {
         }
     }
 
+    /**
+     * @notice Manually update emission rate
+     * @notice It can't override `maxIssued`!
+     * @param _tokensPerBlock Number of tokens per block.
+     */
     function updateEmissionRate(uint256 _tokensPerBlock) public onlyOwner {
         massUpdatePools();
         tokensPerBlock = _tokensPerBlock;
@@ -530,11 +597,19 @@ contract MasterChef is Ownable, ReentrancyGuard {
         emit UpdateEmissionRate(_tokensPerBlock);
     }
 
+    /**
+     * @notice Manually update lockup period
+     * @param _lockup Number of blocks.
+     */
     function setLockupPeriod(uint256 _lockup) external onlyOwner {
       emit UpdateLockupPeriod(lockupPeriodBlocks, _lockup);
       lockupPeriodBlocks = _lockup;
     }
 
+    /**
+     * @notice Manually update penalty address
+     * @param _newPenaltyAddress new penalty address
+     */
     function setPenaltyAddress(address _newPenaltyAddress) external onlyOwner {
       penaltyAddress = _newPenaltyAddress;
       emit updatePenaltyAddress(_newPenaltyAddress);
