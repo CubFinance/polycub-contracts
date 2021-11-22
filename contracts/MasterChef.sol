@@ -370,7 +370,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
             pending[i] = pending[pending.length-1];
             pending.pop();
 
-            if (!pending[msg.sender][i].unlockBlock <= block.number){
+            if (pending[msg.sender][i].unlockBlock > block.number){
               i++;
             }
           } else {
