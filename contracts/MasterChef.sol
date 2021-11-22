@@ -323,22 +323,6 @@ contract MasterChef is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @notice Safe reward tokens transfer function, just in case if rounding error causes pool to not have enough
-     * @param _to  Address to send tokens to
-     * @param _tokenAmount Amount of tokens to send
-     */
-    function safeTokensTransfer(address _to, uint256 _tokenAmount) internal {
-        uint256 tokenBal = IERC20(rewardToken).balanceOf(address(this));
-        bool transferSuccess = false;
-        if (_tokenAmount > tokenBal) {
-            transferSuccess = IERC20(rewardToken).transfer(_to, tokenBal);
-        } else {
-            transferSuccess = IERC20(rewardToken).transfer(_to, _tokenAmount);
-        }
-        require(transferSuccess, "safeTokensTransfer: transfer failed");
-    }
-
-    /**
      * @notice Add tokens to pending queue, unlock countdown will start now
      */
     function collectPendingRewards() external {
@@ -370,12 +354,28 @@ contract MasterChef is Ownable, ReentrancyGuard {
       for (uint256 i = 0; i < _limit; i++){
         if (pending[msg.sender][i].unlockBlock <= block.number){
           sumUnlocked += pending[msg.sender][i].amount;
-          if (!_includeLocked){
-            pending[msg.sender][i] = pending[msg.sender][pending[msg.sender].length-1];
-            pending[msg.sender].pop();
-          }
         } else {
           sumLocked += pending[msg.sender][i].amount;
+        }
+      }
+
+      if (!_includeLocked){
+        uint256 i = 0
+        bool isFinished = false;
+        //Since using `delete` leaves a empty space, and wsing `for` loop could miss some elements,
+        //we first check if element is unlocked and if it is, we replace with with last element and then pop it
+        //Since last element can also be unlocked, we check, and retry again if it is
+        while(!isFinished){
+          if (pending[msg.sender][i].unlockBlock <= block.number){
+            pending[i] = pending[pending.length-1];
+            pending.pop();
+
+            if (!pending[msg.sender][i].unlockBlock <= block.number){
+              i++;
+            }
+          } else {
+            i++;
+          }
         }
       }
 
@@ -550,6 +550,22 @@ contract MasterChef is Ownable, ReentrancyGuard {
         emit EmergencyWithdraw(msg.sender, _pid, amount);
         user.shares = 0;
         user.rewardDebt = 0;
+    }
+
+    /**
+     * @notice Safe reward tokens transfer function, just in case if rounding error causes pool to not have enough
+     * @param _to  Address to send tokens to
+     * @param _tokenAmount Amount of tokens to send
+     */
+    function safeTokensTransfer(address _to, uint256 _tokenAmount) internal {
+        uint256 tokenBal = IERC20(rewardToken).balanceOf(address(this));
+        bool transferSuccess = false;
+        if (_tokenAmount > tokenBal) {
+            transferSuccess = IERC20(rewardToken).transfer(_to, tokenBal);
+        } else {
+            transferSuccess = IERC20(rewardToken).transfer(_to, _tokenAmount);
+        }
+        require(transferSuccess, "safeTokensTransfer: transfer failed");
     }
 
     /**
