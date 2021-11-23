@@ -362,12 +362,12 @@ contract MasterChef is Ownable, ReentrancyGuard {
       if (!_includeLocked){
         uint256 i = 0
         bool isFinished = false;
-        //Since using `delete` leaves a empty space, and wsing `for` loop could miss some elements,
+        //Since using `delete` leaves a empty space, and using `for` loop could miss some elements,
         //we first check if element is unlocked and if it is, we replace with with last element and then pop it
         //Since last element can also be unlocked, we check, and retry again if it is
         while(!isFinished){
           if (pending[msg.sender][i].unlockBlock <= block.number){
-            pending[i] = pending[pending.length-1];
+            pending[msg.sender][i] = pending[msg.sender][pending[msg.sender].length-1];
             pending.pop();
 
             if (pending[msg.sender][i].unlockBlock > block.number){
@@ -376,6 +376,8 @@ contract MasterChef is Ownable, ReentrancyGuard {
           } else {
             i++;
           }
+
+          if (i == pending[msg.sender].length - 1) isFinished = true;
         }
       }
 
