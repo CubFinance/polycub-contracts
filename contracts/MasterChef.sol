@@ -360,7 +360,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
       }
 
       if (!_includeLocked){
-        uint256 i = 0
+        uint256 i = 0;
         bool isFinished = false;
         //Since using `delete` leaves a empty space, and using `for` loop could miss some elements,
         //we first check if element is unlocked and if it is, we replace with with last element and then pop it
