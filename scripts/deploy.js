@@ -76,6 +76,9 @@ function deployVaults(token, masterChef){
     entranceFeeFactor: 9990,
     withdrawFeeFactor: 10000,
     compoundingAddress: govAddress
+  }, {
+    name: "CURVE-USD-BTC-ETH-atricrypto3",
+    
   }]
 
   for (i in vaults){
