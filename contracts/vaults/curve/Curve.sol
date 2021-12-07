@@ -103,8 +103,6 @@ contract Curve_PolyCub_Vault is Ownable, ReentrancyGuard, Pausable {
     address _earnedAddress,
     uint256 _entranceFeeFactor,
     uint256 _withdrawFeeFactor,
-    address[] _rewarders,
-    address[] _CRVToUSDCPath,
     address _reward_contract,
     address _curvePoolAddress
   ) public {

@@ -1,4 +1,8 @@
 let admin = '0xA1982835170d0C2ba789370918F19122D63943A2'
+let wmatic = '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270'
+let govAddress = '0xA1982835170d0C2ba789370918F19122D63943A2'
+let rewardsAddress = '0x2CAA7b86767969048029c27C1A62612c980eB4b8' //treasury
+let deadAddress = '0x000000000000000000000000000000000000dEaD'
 
 async function main() {
   const Token = await ethers.getContractFactory("POLYtoken");
@@ -19,17 +23,44 @@ async function main() {
   //change pealty address
   await masterChef.setPenaltyAddress(staker.address);
 
-  deployVaults(token.address, masterChef.address)
+  deploySushiVaults(token.address, masterChef.address)
+  deployCurveVaults(token.address, masterChef.address)
 }
 
-function deployVaults(token, masterChef){
-  let wmatic = '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270'
-  let govAddress = '0xA1982835170d0C2ba789370918F19122D63943A2'
+function deployCurveVaults(token, masterChef){
+  let vaults = [{
+    name: "CURVE-USD-BTC-ETH-atricrypto3",
+    rewarders: [],
+    farmContractAddress: '',
+    CRVToUSDCPath: [],
+    masterChefAddress: '',
+    wantAddress: '',
+    uniRouterAddress: '',
+    token0Address: '',
+    earnedToToken0Path: [],
+    earnedAddress: '',
+    entranceFeeFactor: 9990,
+    withdrawFeeFactor: 10000,
+    reward_contract: '',
+    curvePoolAddress: ''
+  }]
+
+  for (i in vaults){
+    const CurveVault = await ethers.getContractFactory("Curve_PolyCub_Vault");
+    sushiVault = await SushiVault.deploy(
+      vaults[i].farmContractAddress, vaults[i].rewarders, vaults[i].CRVToUSDCPath, vaults[i].masterChefAddress,
+      vaults[i].wantAddress, vaults[i].uniRouterAddress, vaults[i].token0Address, vaults[i].earnedToToken0Path,
+      vaults[i].earnedAddress, vaults[i].entranceFeeFactor, vaults[i].withdrawFeeFactor, vaults[i].reward_contract,
+      vaults[i].curvePoolAddress
+    )
+    console.log(`Deployed: ${vaults[i].name}: ${sushiVault.address}`)
+  }
+}
+
+function deploySushiVaults(token, masterChef){
   let sushiEarned = '0x0b3F868E0BE5597D5DB7fEB59E1CADBb0fdDa50a' //Sushi token
   let sushiFarm = '0x0769fd68dFb93167989C6f7254cd0D766Fb2841F' //Sushi minichef
   let sushiRouter = '0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506' //Sushi router
-  let rewardsAddress = '0x2CAA7b86767969048029c27C1A62612c980eB4b8' //treasury
-  let deadAddress = '0x000000000000000000000000000000000000dEaD'
 
   let sushiEarnedToToken = [sushiEarned, wmatic, token]
 
@@ -76,9 +107,6 @@ function deployVaults(token, masterChef){
     entranceFeeFactor: 9990,
     withdrawFeeFactor: 10000,
     compoundingAddress: govAddress
-  }, {
-    name: "CURVE-USD-BTC-ETH-atricrypto3",
-    
   }]
 
   for (i in vaults){
@@ -91,7 +119,6 @@ function deployVaults(token, masterChef){
     )
     console.log(`Deployed: ${vaults[i].name}: ${sushiVault.address}`)
   }
-
 }
 
 main()
