@@ -6,29 +6,26 @@ let rewardsAddress = '0x2CAA7b86767969048029c27C1A62612c980eB4b8' //treasury
 let deadAddress = '0x000000000000000000000000000000000000dEaD'
 
 async function main() {
-  // const Token = await ethers.getContractFactory("POLYCUB");
-  // token = await Token.deploy();
-  // await token.deployed()
-  //
-  // const MasterChef = await ethers.getContractFactory("MasterChef");
-  // masterChef = await MasterChef.deploy('0x000000000000000000000000000000000000dEaD', 0, token.address)
-  // await masterChef.deployed()
-  //
-  // const Staker = await ethers.getContractFactory("xStaker");
-  // staker = await Staker.deploy(token.address, admin, masterChef.address)
-  // await staker.deployed()
-  //
-  // await token.mint(admin, '1300000000000000000000000')
-  // await token.transferOwnership(masterChef.address)
-  //
-  // //change pealty address
-  // await masterChef.setPenaltyAddress(staker.address);
+  const Token = await ethers.getContractFactory("POLYCUB");
+  token = await Token.deploy();
+  await token.deployed()
 
-  // await deploySushiVaults(token.address, masterChef.address)
-  // await deployCurveVaults(masterChef.address)
+  const MasterChef = await ethers.getContractFactory("MasterChef");
+  masterChef = await MasterChef.deploy('0x000000000000000000000000000000000000dEaD', 0, token.address)
+  await masterChef.deployed()
 
-  console.log(`Deploying...`)
-  await deployCurveVaults('0xA1982835170d0C2ba789370918F19122D63943A2')
+  const Staker = await ethers.getContractFactory("xStaker");
+  staker = await Staker.deploy(token.address, admin, masterChef.address)
+  await staker.deployed()
+
+  await token.mint(admin, '1300000000000000000000000')
+  await token.transferOwnership(masterChef.address)
+
+  //change pealty address
+  await masterChef.setPenaltyAddress(staker.address);
+
+  await deploySushiVaults(token.address, masterChef.address)
+  await deployCurveVaults(masterChef.address)
 }
 
 async function deployCurveVaults(masterChef){
@@ -50,20 +47,20 @@ async function deployCurveVaults(masterChef){
   }]
 
   for (i in vaults){
-    // const CurveVault = await ethers.getContractFactory("Curve_PolyCub_Vault");
-    // curveVault = await CurveVault.deploy(
-    //   vaults[i].farmContractAddress, vaults[i].rewarders, vaults[i].CRVToUSDCPath, vaults[i].masterChefAddress,
-    //   vaults[i].wantAddress, govAddress, rewardsAddress, vaults[i].uniRouterAddress,
-    //   vaults[i].token0Address, vaults[i].earnedToToken0Path, vaults[i].earnedAddress, vaults[i].entranceFeeFactor,
-    //   vaults[i].withdrawFeeFactor, vaults[i].reward_contract, vaults[i].curvePoolAddress
-    // )
-    await verify(/*curveVault.address*/'0x1751252b565f63d0b3193ce84666ff3e956e782b', [
+    const CurveVault = await ethers.getContractFactory("Curve_PolyCub_Vault");
+    curveVault = await CurveVault.deploy(
+      vaults[i].farmContractAddress, vaults[i].rewarders, vaults[i].CRVToUSDCPath, vaults[i].masterChefAddress,
+      vaults[i].wantAddress, govAddress, rewardsAddress, vaults[i].uniRouterAddress,
+      vaults[i].token0Address, vaults[i].earnedToToken0Path, vaults[i].earnedAddress, vaults[i].entranceFeeFactor,
+      vaults[i].withdrawFeeFactor, vaults[i].reward_contract, vaults[i].curvePoolAddress
+    )
+    await verify(curveVault.address, [
       vaults[i].farmContractAddress, vaults[i].rewarders, vaults[i].CRVToUSDCPath, vaults[i].masterChefAddress,
       vaults[i].wantAddress, govAddress, rewardsAddress, vaults[i].uniRouterAddress,
       vaults[i].token0Address, vaults[i].earnedToToken0Path, vaults[i].earnedAddress, vaults[i].entranceFeeFactor,
       vaults[i].withdrawFeeFactor, vaults[i].reward_contract, vaults[i].curvePoolAddress
     ])
-    // console.log(`Deployed: ${vaults[i].name}: ${curveVault.address}`)
+    console.log(`Deployed: ${vaults[i].name}: ${curveVault.address}`)
   }
 }
 
