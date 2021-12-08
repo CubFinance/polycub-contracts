@@ -30,19 +30,19 @@ async function main() {
 function deployCurveVaults(token, masterChef){
   let vaults = [{
     name: "CURVE-USD-BTC-ETH-atricrypto3",
-    rewarders: [],
-    farmContractAddress: '',
-    CRVToUSDCPath: [],
-    masterChefAddress: '',
-    wantAddress: '',
-    uniRouterAddress: '',
-    token0Address: '',
-    earnedToToken0Path: [],
-    earnedAddress: '',
+    rewarders: ['0x703F98CB0DA4b8bf64e1C7549e49d140C0acbF94', '0x36477AF584988cb79e2991bfa5CfF2CE275435BE'],
+    farmContractAddress: '0x3B6B158A76fd8ccc297538F454ce7B4787778c7C',
+    CRVToUSDCPath: ['0x172370d5Cd63279eFa6d502DAB29171933a610AF', '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619'],
+    masterChefAddress: masterChef,
+    wantAddress: '0xdAD97F7713Ae9437fa9249920eC8507e5FbB23d3',
+    uniRouterAddress: '0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506',
+    token0Address: '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619',
+    earnedToToken0Path: ['0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270', '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619'],
+    earnedAddress: '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270',
     entranceFeeFactor: 9990,
     withdrawFeeFactor: 10000,
-    reward_contract: '',
-    curvePoolAddress: ''
+    reward_contract: '0xBcA219099eA214f725C746247639D4770b286Bd3',
+    curvePoolAddress: '0x1d8b86e3D88cDb2d34688e87E72F388Cb541B7C8'
   }]
 
   for (i in vaults){

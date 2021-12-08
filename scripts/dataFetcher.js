@@ -34,6 +34,17 @@ async function main(i){
   let curvePoolAddress = await instance.methods.curvePoolAddress().call()
   let CRVAddress = await instance.methods.CRVAddress().call()
   let reward_contract = await instance.methods.reward_contract().call()
+  let uniRouter = await instance.methods.uniRouterAddress().call()
+  let crvPath1;
+  let crvPath2;
+  let crvPath3;
+  let crvPath4;
+  try {
+    crvPath1 = await instance.methods.CRVToUSDCPath(0).call()
+    crvPath2 = await instance.methods.CRVToUSDCPath(1).call()
+    crvPath3 = await instance.methods.CRVToUSDCPath(2).call()
+    crvPath4 = await instance.methods.CRVToUSDCPath(4).call()
+  } catch (e) {}
 
   console.log(`Fetching data from: ${contracts[i].name}`)
   console.log(`farmContractAddress: ${farmContractAddress}`)
@@ -48,6 +59,11 @@ async function main(i){
   console.log(`curvePoolAddress: ${curvePoolAddress}`)
   console.log(`CRVAddress: ${CRVAddress}`)
   console.log(`reward_contract: ${reward_contract}`)
+  console.log(`unirouter: ${uniRouter}`)
+  crvPath1 ? console.log(`CRVToUSDCPath 1: ${crvPath1}`) : ''
+  crvPath2 ? console.log(`CRVToUSDCPath 2: ${crvPath2}`) : ''
+  crvPath3 ? console.log(`CRVToUSDCPath 3: ${crvPath3}`) : ''
+  crvPath4 ? console.log(`CRVToUSDCPath 4: ${crvPath4}`) : ''
   console.log()
   return true;
 }
