@@ -6,29 +6,32 @@ let rewardsAddress = '0x2CAA7b86767969048029c27C1A62612c980eB4b8' //treasury
 let deadAddress = '0x000000000000000000000000000000000000dEaD'
 
 async function main() {
-  const Token = await ethers.getContractFactory("POLYCUB");
-  token = await Token.deploy();
-  await token.deployed()
+  // const Token = await ethers.getContractFactory("POLYCUB");
+  // token = await Token.deploy();
+  // await token.deployed()
+  //
+  // const MasterChef = await ethers.getContractFactory("MasterChef");
+  // masterChef = await MasterChef.deploy('0x000000000000000000000000000000000000dEaD', 0, token.address)
+  // await masterChef.deployed()
+  //
+  // const Staker = await ethers.getContractFactory("xStaker");
+  // staker = await Staker.deploy(token.address, admin, masterChef.address)
+  // await staker.deployed()
+  //
+  // await token.mint(admin, '1300000000000000000000000')
+  // await token.transferOwnership(masterChef.address)
+  //
+  // //change pealty address
+  // await masterChef.setPenaltyAddress(staker.address);
 
-  const MasterChef = await ethers.getContractFactory("MasterChef");
-  masterChef = await MasterChef.deploy('0x000000000000000000000000000000000000dEaD', 0, token.address)
-  await masterChef.deployed()
+  // await deploySushiVaults(token.address, masterChef.address)
+  // await deployCurveVaults(masterChef.address)
 
-  const Staker = await ethers.getContractFactory("xStaker");
-  staker = await Staker.deploy(token.address, admin, masterChef.address)
-  await staker.deployed()
-
-  await token.mint(admin, '1300000000000000000000000')
-  await token.transferOwnership(masterChef.address)
-
-  //change pealty address
-  await masterChef.setPenaltyAddress(staker.address);
-
-  // deploySushiVaults(token.address, masterChef.address)
-  deployCurveVaults(token.address, masterChef.address)
+  console.log(`Deploying...`)
+  await deployCurveVaults('0xA1982835170d0C2ba789370918F19122D63943A2')
 }
 
-function deployCurveVaults(token, masterChef){
+async function deployCurveVaults(masterChef){
   let vaults = [{
     name: "CURVE-USD-BTC-ETH-atricrypto3",
     rewarders: ['0x703F98CB0DA4b8bf64e1C7549e49d140C0acbF94', '0x36477AF584988cb79e2991bfa5CfF2CE275435BE'],
@@ -47,18 +50,24 @@ function deployCurveVaults(token, masterChef){
   }]
 
   for (i in vaults){
-    const CurveVault = await ethers.getContractFactory("Curve_PolyCub_Vault");
-    sushiVault = await SushiVault.deploy(
+    // const CurveVault = await ethers.getContractFactory("Curve_PolyCub_Vault");
+    // curveVault = await CurveVault.deploy(
+    //   vaults[i].farmContractAddress, vaults[i].rewarders, vaults[i].CRVToUSDCPath, vaults[i].masterChefAddress,
+    //   vaults[i].wantAddress, govAddress, rewardsAddress, vaults[i].uniRouterAddress,
+    //   vaults[i].token0Address, vaults[i].earnedToToken0Path, vaults[i].earnedAddress, vaults[i].entranceFeeFactor,
+    //   vaults[i].withdrawFeeFactor, vaults[i].reward_contract, vaults[i].curvePoolAddress
+    // )
+    await verify(/*curveVault.address*/'0x1751252b565f63d0b3193ce84666ff3e956e782b', [
       vaults[i].farmContractAddress, vaults[i].rewarders, vaults[i].CRVToUSDCPath, vaults[i].masterChefAddress,
-      vaults[i].wantAddress, vaults[i].uniRouterAddress, vaults[i].token0Address, vaults[i].earnedToToken0Path,
-      vaults[i].earnedAddress, vaults[i].entranceFeeFactor, vaults[i].withdrawFeeFactor, vaults[i].reward_contract,
-      vaults[i].curvePoolAddress
-    )
-    console.log(`Deployed: ${vaults[i].name}: ${sushiVault.address}`)
+      vaults[i].wantAddress, govAddress, rewardsAddress, vaults[i].uniRouterAddress,
+      vaults[i].token0Address, vaults[i].earnedToToken0Path, vaults[i].earnedAddress, vaults[i].entranceFeeFactor,
+      vaults[i].withdrawFeeFactor, vaults[i].reward_contract, vaults[i].curvePoolAddress
+    ])
+    // console.log(`Deployed: ${vaults[i].name}: ${curveVault.address}`)
   }
 }
 
-function deploySushiVaults(token, masterChef){
+async function deploySushiVaults(token, masterChef){
   let sushiEarned = '0x0b3F868E0BE5597D5DB7fEB59E1CADBb0fdDa50a' //Sushi token
   let sushiFarm = '0x0769fd68dFb93167989C6f7254cd0D766Fb2841F' //Sushi minichef
   let sushiRouter = '0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506' //Sushi router
@@ -118,8 +127,24 @@ function deploySushiVaults(token, masterChef){
       vaults[i].token0ToEarnedPath, vaults[i].token1ToEarnedPath, vaults[i].controllerFee,
       vaults[i].buyBackRate, vaults[i].entranceFeeFactor, vaults[i].withdrawFeeFactor, vaults[i].compoundingAddress
     )
+    await verify(sushiVault.address, [
+      vaults[i].addresses, vaults[i].pid, vaults[i].isSameAssetDeposit, vaults[i].isCubComp,
+      vaults[i].earnedToCUBPath, vaults[i].earnedToToken0Path, vaults[i].earnedToToken1Path,
+      vaults[i].token0ToEarnedPath, vaults[i].token1ToEarnedPath, vaults[i].controllerFee,
+      vaults[i].buyBackRate, vaults[i].entranceFeeFactor, vaults[i].withdrawFeeFactor, vaults[i].compoundingAddress
+    ])
     console.log(`Deployed: ${vaults[i].name}: ${sushiVault.address}`)
   }
+}
+
+async function verify(address, arguments){
+  setTimeout(() => {
+    //wait...
+  }, 1000 * 10)
+  await hre.run("verify:verify", {
+    address: address,
+    constructorArguments: arguments,
+  });
 }
 
 main()
