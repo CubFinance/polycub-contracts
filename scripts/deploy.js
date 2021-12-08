@@ -1,11 +1,12 @@
 let admin = '0xA1982835170d0C2ba789370918F19122D63943A2'
+
 let wmatic = '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270'
 let govAddress = '0xA1982835170d0C2ba789370918F19122D63943A2'
 let rewardsAddress = '0x2CAA7b86767969048029c27C1A62612c980eB4b8' //treasury
 let deadAddress = '0x000000000000000000000000000000000000dEaD'
 
 async function main() {
-  const Token = await ethers.getContractFactory("POLYtoken");
+  const Token = await ethers.getContractFactory("POLYCUB");
   token = await Token.deploy();
   await token.deployed()
 
@@ -23,7 +24,7 @@ async function main() {
   //change pealty address
   await masterChef.setPenaltyAddress(staker.address);
 
-  deploySushiVaults(token.address, masterChef.address)
+  // deploySushiVaults(token.address, masterChef.address)
   deployCurveVaults(token.address, masterChef.address)
 }
 

@@ -96,10 +96,10 @@ contract Curve_PolyCub_Vault is Ownable, ReentrancyGuard, Pausable {
     address _masterChefAddress,
     address _wantAddress,
     address _govAddress,
-    address _rewardsAddress
+    address _rewardsAddress,
     address _uniRouterAddress,
     address _token0Address,
-    address[] _earnedToToken0Path,
+    address[] memory _earnedToToken0Path,
     address _earnedAddress,
     uint256 _entranceFeeFactor,
     uint256 _withdrawFeeFactor,
