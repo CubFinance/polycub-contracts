@@ -9,14 +9,17 @@ async function main() {
   const Token = await ethers.getContractFactory("POLYCUB");
   token = await Token.deploy();
   await token.deployed()
+  await verify(token.address, [])
 
   const MasterChef = await ethers.getContractFactory("MasterChef");
   masterChef = await MasterChef.deploy('0x000000000000000000000000000000000000dEaD', 0, token.address)
   await masterChef.deployed()
+  await verify(masterChef.address, ['0x000000000000000000000000000000000000dEaD', 0, token.address])
 
   const Staker = await ethers.getContractFactory("xStaker");
   staker = await Staker.deploy(token.address, admin, masterChef.address)
   await staker.deployed()
+  await verify(staker.address, [token.address, admin, masterChef.address])
 
   await token.mint(admin, '1300000000000000000000000')
   await token.transferOwnership(masterChef.address)
@@ -25,7 +28,7 @@ async function main() {
   await masterChef.setPenaltyAddress(staker.address);
 
   await deploySushiVaults(token.address, masterChef.address)
-  await deployCurveVaults(masterChef.address)
+  // await deployCurveVaults(masterChef.address)
 }
 
 async function deployCurveVaults(masterChef){
@@ -98,7 +101,8 @@ async function deploySushiVaults(token, masterChef){
     buyBackRate: 0,
     entranceFeeFactor: 9990,
     withdrawFeeFactor: 10000,
-    compoundingAddress: govAddress
+    compoundingAddress: govAddress,
+    allocPoints: 1000
   }, {
     name: "SUSHI-WETH-DAI",
     addresses: weth_dai_addresses,
@@ -114,7 +118,8 @@ async function deploySushiVaults(token, masterChef){
     buyBackRate: 0,
     entranceFeeFactor: 9990,
     withdrawFeeFactor: 10000,
-    compoundingAddress: govAddress
+    compoundingAddress: govAddress,
+    allocPoints: 1000
   }]
 
   for (i in vaults){
@@ -132,7 +137,13 @@ async function deploySushiVaults(token, masterChef){
       vaults[i].buyBackRate, vaults[i].entranceFeeFactor, vaults[i].withdrawFeeFactor, vaults[i].compoundingAddress
     ])
     console.log(`Deployed: ${vaults[i].name}: ${sushiVault.address}`)
+    await addVaultToMasterChef(masterChef, sushiVault.address, vaults[i].addresses[4], vaults[i].allocPoints, vaults[i].name)
   }
+}
+
+async function addVaultToMasterChef(masterChef, vaultAddress, want, allocPoints, name){
+  await masterChef.add(allocPoints, want, true, vaultAddress);
+  console.log(`Added ${name} vault!`)
 }
 
 async function verify(address, arguments){
