@@ -43,7 +43,8 @@ async function deployCurveVaults(masterChef){
     entranceFeeFactor: 9990,
     withdrawFeeFactor: 10000,
     reward_contract: '0xBcA219099eA214f725C746247639D4770b286Bd3',
-    curvePoolAddress: '0x1d8b86e3D88cDb2d34688e87E72F388Cb541B7C8'
+    curvePoolAddress: '0x1d8b86e3D88cDb2d34688e87E72F388Cb541B7C8',
+    getWantTokenLink: 'https://polygon.curve.fi/atricrypto3/deposit'
   }]
 
   for (i in vaults){
