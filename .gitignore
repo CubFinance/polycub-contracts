@@ -6,3 +6,4 @@ truffle-config.js
 build/
 ignore/
 .env
+verify.json
