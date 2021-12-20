@@ -53,6 +53,7 @@ async function deployCurveVaults(masterChef, masterChefInstance){
     reward_contract: '0xBcA219099eA214f725C746247639D4770b286Bd3',
     curvePoolAddress: '0x1d8b86e3D88cDb2d34688e87E72F388Cb541B7C8',
     getWantTokenLink: 'https://polygon.curve.fi/atricrypto3/deposit',
+    isAave: false,
     allocPoints: 1000
   }]
 
@@ -62,7 +63,7 @@ async function deployCurveVaults(masterChef, masterChefInstance){
       vaults[i].farmContractAddress, vaults[i].rewarders, vaults[i].CRVToUSDCPath, vaults[i].masterChefAddress,
       vaults[i].wantAddress, govAddress, rewardsAddress, vaults[i].uniRouterAddress,
       vaults[i].token0Address, vaults[i].earnedToToken0Path, vaults[i].earnedAddress, vaults[i].entranceFeeFactor,
-      vaults[i].withdrawFeeFactor, vaults[i].reward_contract, vaults[i].curvePoolAddress
+      vaults[i].withdrawFeeFactor, vaults[i].reward_contract, vaults[i].curvePoolAddress, vaults[i].isAave
     )
     await curveVault.deployed()
     await addVaultToMasterChef(masterChefInstance, curveVault.address, vaults[i].wantAddress, vaults[i].allocPoints, vaults[i].name)

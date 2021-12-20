@@ -20,6 +20,10 @@ interface ICurveRewardsOnlyGauge {
 }
 
 interface ICurveStableSwapAave {
+  function add_liquidity(uint256[3] memory _amounts, uint256 _min_mint_amount) external;
+}
+
+interface ICurveStableSwap {
   function add_liquidity(uint256[5] memory _amounts, uint256 _min_mint_amount) external;
 }
 
@@ -76,6 +80,7 @@ contract Curve_PolyCub_Vault is Ownable, ReentrancyGuard, Pausable {
   bool public isAutoComp = true;
   bool public isSameAssetDeposit = false;
   bool public onlyGov = true;
+  bool public isAave;
 
   address[] public rewarders;
   address[] public CRVToUSDCPath;
@@ -104,7 +109,8 @@ contract Curve_PolyCub_Vault is Ownable, ReentrancyGuard, Pausable {
     uint256 _entranceFeeFactor,
     uint256 _withdrawFeeFactor,
     address _reward_contract,
-    address _curvePoolAddress
+    address _curvePoolAddress,
+    bool _isAave
   ) public {
     farmContractAddress = _farmContractAddress;
     rewarders = _rewarders;
@@ -124,6 +130,7 @@ contract Curve_PolyCub_Vault is Ownable, ReentrancyGuard, Pausable {
     CRVToUSDCPath = _CRVToUSDCPath;
     reward_contract = _reward_contract;
     curvePoolAddress = _curvePoolAddress;
+    isAave = _isAave;
   }
 
   function updateRewarders(address[] memory _rewarders) public onlyAllowGov {
@@ -300,7 +307,11 @@ contract Curve_PolyCub_Vault is Ownable, ReentrancyGuard, Pausable {
         token0Amt
       );
 
-      ICurveStableSwapAave(curvePoolAddress).add_liquidity([0, 0, 0, 0, token0Amt], 0);
+      if (isAave){
+        ICurveStableSwapAave(curvePoolAddress).add_liquidity([0, 0, 0, 0, token0Amt], 0);
+      } else {
+        ICurveStableSwap(curvePoolAddress).add_liquidity([0, 0, token0Amt], 0);
+      }
     }
 
     lastEarnBlock = block.number;
