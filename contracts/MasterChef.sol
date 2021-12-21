@@ -270,25 +270,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
      * @param _pid PID of the pool we want to update
      */
     function updatePool(uint256 _pid) public {
-        //update emission schedule if needed
-        //only for the first month we use emissionSchedule
-        if (block.number < startBlock + (blockPerDay * 7 * 4)){
-          if (emissionScheduleArray.length >= emissionScheduleLatest + 1){
-            //update emission schedule
-            if (emissionScheduleArray[emissionScheduleLatest].startBlock <= block.number){
-              tokensPerBlock = emissionScheduleArray[emissionScheduleLatest].amount;
-              emissionScheduleLatest += 1;
-              emit UpdateEmissionRate(tokensPerBlock);
-            }
-          }
-        } else {
-          //after first month, we just cut inflation by 50% every month
-          if (latestMonthlyInflationCut == 0 || latestMonthlyInflationCut < block.number - (blockPerDay * 4 * 7)){
-            latestMonthlyInflationCut = block.number;
-            tokensPerBlock = tokensPerBlock.div(2);
-            emit UpdateEmissionRate(tokensPerBlock);
-          }
-        }
+        _updateEmission();
 
         PoolInfo storage pool = poolInfo[_pid];
         if (block.number <= pool.lastRewardBlock) {
@@ -320,6 +302,30 @@ contract MasterChef is Ownable, ReentrancyGuard {
             tokensReward.mul(1e12).div(sharesTotal)
         );
         pool.lastRewardBlock = block.number;
+    }
+
+    /**
+     * @notice Internal function to update emission rate to match schedule
+     */
+    function _updateEmission() internal {
+      //only for the first month we use emissionSchedule
+      if (block.number < startBlock + (blockPerDay * 7 * 4)){
+        if (emissionScheduleArray.length >= emissionScheduleLatest + 1){
+          //update emission schedule
+          if (emissionScheduleArray[emissionScheduleLatest].startBlock <= block.number){
+            tokensPerBlock = emissionScheduleArray[emissionScheduleLatest].amount;
+            emissionScheduleLatest += 1;
+            emit UpdateEmissionRate(tokensPerBlock);
+          }
+        }
+      } else {
+        //after first month, we just cut inflation by 50% every month
+        if (latestMonthlyInflationCut == 0 || latestMonthlyInflationCut < block.number - (blockPerDay * 4 * 7)){
+          latestMonthlyInflationCut = block.number;
+          tokensPerBlock = tokensPerBlock.div(2);
+          emit UpdateEmissionRate(tokensPerBlock);
+        }
+      }
     }
 
     /**
