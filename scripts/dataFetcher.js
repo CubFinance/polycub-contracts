@@ -1,7 +1,7 @@
 const Web3 = require("web3")
 const web3 = new Web3("https://polygon-rpc.com/")
 
-let ABI = require("../build/abi/Curve_PolyCub_Vault.json")
+let ABI = require("../build/abi.json")
 
 let contracts = [
   {

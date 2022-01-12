@@ -331,7 +331,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
     /**
      * @notice Add tokens to pending queue, unlock countdown will start now
      */
-    function collectPendingRewards() external {
+    function collectPendingRewards() public {
         uint256 totalPending;
         for (uint256 i = 0; i < poolInfo.length; i++){
             updatePool(i);
@@ -352,6 +352,8 @@ contract MasterChef is Ownable, ReentrancyGuard {
      * @param _limit In case if gas limit is lower than gas required to claim entire array of pendingRewards, use _limit to claim just a limited number of pendingRewards
      */
     function claim(bool _includeLocked, uint256 _limit) external nonReentrant {
+      collectPendingRewards();
+      
       uint256 sumLocked;
       uint256 sumUnlocked;
 
