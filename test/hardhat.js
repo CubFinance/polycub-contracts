@@ -124,8 +124,8 @@ describe("MasterChef", function () {
     let userBalance = await token.balanceOf(accounts[0].address)
     let penaltyBalance = await token.balanceOf(staker.address)
 
-    expect(lockedTokensAfterClaim.toNumber()).to.equal(0)
-    expect(unlockedTokensAfterClaim.toNumber()).to.equal(0)
+    expect(lockedTokensAfterClaim.toString()).to.equal("0")
+    expect(unlockedTokensAfterClaim.toString()).to.equal("0")
     expect(userBalance.toString()).to.equal(beforeUserBalance.add(lockedTokensBeforeClaim.div(2)).toString())
     expect(penaltyBalance.toString()).to.equal(beforePenaltyBalance.add(lockedTokensBeforeClaim.div(2)).toString())
   });

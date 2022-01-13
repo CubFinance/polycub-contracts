@@ -10,6 +10,8 @@ import "./interfaces/ReentrancyGuard.sol";
 import "./interfaces/IStrategy.sol";
 import "./interfaces/IToken.sol";
 
+import "hardhat/console.sol";
+
 /// @title MasterChef yield farming contract
 /// @author CubFinance, @fbsloXBT
 
@@ -352,8 +354,6 @@ contract MasterChef is Ownable, ReentrancyGuard {
      * @param _limit In case if gas limit is lower than gas required to claim entire array of pendingRewards, use _limit to claim just a limited number of pendingRewards
      */
     function claim(bool _includeLocked, uint256 _limit) external nonReentrant {
-      collectPendingRewards();
-
       uint256 sumLocked;
       uint256 sumUnlocked;
 
@@ -376,11 +376,13 @@ contract MasterChef is Ownable, ReentrancyGuard {
         //Since last element can also be unlocked, we check, and retry again if it is
         while(!isFinished){
           if (pending[msg.sender][i].unlockBlock <= block.number){
+            console.log("unlocker here");
             pending[msg.sender][i] = pending[msg.sender][pending[msg.sender].length-1];
             pending[msg.sender].pop();
+            if (pending[msg.sender].length == 0) isFinished = true;
           } else {
             i++;
-            if (i == pending[msg.sender].length) isFinished = true;
+            if (i >= pending[msg.sender].length) isFinished = true;
           }
         }
       }
