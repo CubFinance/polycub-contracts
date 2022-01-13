@@ -370,16 +370,19 @@ contract MasterChef is Ownable, ReentrancyGuard {
       //remove only unlocked pendingRewards
       if (!_includeLocked){
         uint256 i = 0;
+        uint256 removedCount = 0;
         bool isFinished = false;
         //Since using `delete` leaves a empty space, and using `for` loop could miss some elements,
         //we first check if element is unlocked and if it is, we replace with with last element and then pop it
         //Since last element can also be unlocked, we check, and retry again if it is
-        while(!isFinished){
+        while(!isFinished && removedCount <= _limit){
+          if (pending[msg.sender].length == 0) isFinished = true;
+
           if (pending[msg.sender][i].unlockBlock <= block.number){
             console.log("unlocker here");
             pending[msg.sender][i] = pending[msg.sender][pending[msg.sender].length-1];
             pending[msg.sender].pop();
-            if (pending[msg.sender].length == 0) isFinished = true;
+            removedCount++;
           } else {
             i++;
             if (i >= pending[msg.sender].length) isFinished = true;
