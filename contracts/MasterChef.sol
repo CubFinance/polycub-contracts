@@ -375,7 +375,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
         //Since using `delete` leaves a empty space, and using `for` loop could miss some elements,
         //we first check if element is unlocked and if it is, we replace with with last element and then pop it
         //Since last element can also be unlocked, we check, and retry again if it is
-        while(!isFinished || removedCount <= _limit){
+        while(!isFinished || i < _limit){
           if (pending[msg.sender].length == 0) isFinished = true;
 
           if (pending[msg.sender][i].unlockBlock <= block.number){
