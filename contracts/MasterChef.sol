@@ -353,7 +353,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
      */
     function claim(bool _includeLocked, uint256 _limit) external nonReentrant {
       collectPendingRewards();
-      
+
       uint256 sumLocked;
       uint256 sumUnlocked;
 
@@ -367,6 +367,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
         }
       }
 
+      //remove only unlocked pendingRewards
       if (!_includeLocked){
         uint256 i = 0;
         bool isFinished = false;
