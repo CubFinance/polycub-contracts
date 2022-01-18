@@ -68,6 +68,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
       uint256 startBlock;
       uint256 endBlock;
       uint256 amount;
+      uint256 alreadyClaimed;
     }
     /// @notice An array of pendingRewards structs, storing data about user rewards
     mapping(address => pendingRewards[]) public pending;
@@ -353,43 +354,46 @@ contract MasterChef is Ownable, ReentrancyGuard {
           uint256 amountPerBlock = pending[msg.sender][i].amount / duration;
           uint256 unlockedAmount = (duration - lockupPeriodBlocks) * amountPerBlock;
           //remaining locked tokens
-          pending[msg.sender][i].amount = pending[msg.sender][i].amount - unlockedAmount;
+          sumLocked += pending[msg.sender][i].amount - unlockedAmount - pending[msg.sender].alreadyClaimed;
 
-          sumUnlocked += unlockedAmount;
-          sumLocked += pending[msg.sender][i].amount;
+          sumUnlocked += unlockedAmount - pending[msg.sender].alreadyClaimed;
+          pending[msg.sender].alreadyClaimed += unlockedAmount
         }
       }
 
       //remove only unlocked pendingRewards
       if (!_claimLocked){
-        uint256 i = 0;
-        uint267 j = 0;
-        bool finished = false;
-        //Since using `delete` leaves a empty space, and using `for` loop could miss some elements,
-        //we first check if element is unlocked and if it is, we replace with with last element and then pop it
-        //Since last element can also be unlocked, we check, and retry again if it is
-        while(!finished || j < _limit){
-          if (pending[msg.sender][i].amount == 0){
-            pending[msg.sender][i] = pending[msg.sender][pending[msg.sender].length-1];
-            pending[msg.sender].pop();
-          } else {
-            i++;
-            if (i >= pending[msg.sender].length) finished = true;
+        for (uint256 i = 0; i < _limit; i++){
+          if (pending[msg.sender].amount == pending[msg.sender].alreadyClaimed){ //already fully claimed
+            delete pending[msg.sender][i]; //reset the element
           }
-          j++;
         }
-      }
 
-      if (_claimLocked){
+        safeTokensTransfer(msg.sender, sumUnlocked);
+      } else {
         //delete entire array
         for (uint256 i = 0; i < _limit; i++){
-            pending[msg.sender].pop();
+            delete pending[msg.sender][i];
         }
 
         safeTokensTransfer(msg.sender, sumUnlocked + sumLocked.div(2));
         safeTokensTransfer(penaltyAddress, sumLocked.div(2));
-      } else {
-        safeTokensTransfer(msg.sender, sumUnlocked);
+      }
+
+      //Now remove deleted elements, so they won't stay in the array
+      //Since using `delete` leaves a empty space, and using `for` loop could miss some elements,
+      //we first check if element is unlocked and if it is, we replace with with last element and then pop it
+      //Since last element can also be unlocked, we check, and retry again if it is
+      uint256 i = 0;
+      uint256 j = 0;
+      while(j < _limit){
+        if (pending[msg.sender][i].amount == 0){ //deleted element 
+          pending[msg.sender][i] = pending[msg.sender][pending[msg.sender].length - 1];
+          pending[msg.sender].pop();
+        } else {
+          i++;
+        }
+        j++;
       }
 
       Claim(msg.sender, sumUnlocked + sumLocked.div(2), sumLocked.div(2));
@@ -402,7 +406,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
     function unlockedTokens(address _user) external view returns (uint256) {
       uint256 sumUnlocked;
 
-      for (uint256 i = 0; i < _limit; i++){
+      for (uint256 i = 0; i < pending[msg.sender].length; i++){
         //already fully unlocked
         if (block.number - pending[msg.sender][i].endBlock >= lockupPeriodBlocks){
           sumUnlocked += pending[msg.sender][i].amount;
@@ -410,7 +414,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
           uint256 duration = pending[msg.sender][i].endBlock - pending[msg.sender][i].startBlock;
           uint256 amountPerBlock = pending[msg.sender][i].amount / duration;
           uint256 unlockedAmount = (duration - lockupPeriodBlocks) * amountPerBlock;
-          sumUnlocked += unlockedAmount;
+          sumUnlocked += unlockedAmount - pending[msg.sender].alreadyClaimed;
         }
       }
 
@@ -424,13 +428,14 @@ contract MasterChef is Ownable, ReentrancyGuard {
     function lockedTokens(address _user) external view returns (uint256) {
       uint256 sumLocked = 0;
 
-      for (uint256 i = 0; i < _limit; i++){
-        if (block.number - pending[msg.sender][i].endBlock < lockupPeriodBlocks){
+      for (uint256 i = 0; i < pending[msg.sender].length; i++){
+        if (block.number - pending[msg.sender][i].endBlock >= lockupPeriodBlocks){
+          //already fully unlocked
+        } else {
           uint256 duration = pending[msg.sender][i].endBlock - pending[msg.sender][i].startBlock;
           uint256 amountPerBlock = pending[msg.sender][i].amount / duration;
           uint256 unlockedAmount = (duration - lockupPeriodBlocks) * amountPerBlock;
-
-          sumLocked += pending[msg.sender][i].amount - unlockedAmount;
+          sumLocked += pending[msg.sender][i].amount - unlockedAmount - pending[msg.sender].alreadyClaimed;
         }
       }
 
