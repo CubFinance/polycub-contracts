@@ -347,20 +347,21 @@ contract MasterChef is Ownable, ReentrancyGuard {
 
       for (uint256 i = 0; i < _limit; i++){
         //already fully unlocked
-        if (block.number - pending[msg.sender][i].endBlock >= lockupPeriodBlocks){
-          sumUnlocked += pending[msg.sender][i].amount - pending[msg.sender][i].alreadyClaimed;
+        if (block.number.sub(pending[msg.sender][i].endBlock) >= lockupPeriodBlocks){
+          sumUnlocked = sumUnlocked.add(pending[msg.sender][i].amount.sub(pending[msg.sender][i].alreadyClaimed));
           //reset the fully claimed element
           delete pending[msg.sender][i];
         } else {
-          uint256 duration = pending[msg.sender][i].endBlock - pending[msg.sender][i].startBlock;
-          uint256 amountPerBlock = pending[msg.sender][i].amount / duration;
-          uint256 unlockedBlocks = pending[msg.sender][i].startBlock + lockupPeriodBlocks >= block.number ? block.number - pending[msg.sender][i].startBlock - lockupPeriodBlocks : 0;
-          uint256 unlockedAmount = unlockedBlocks * amountPerBlock;
+          uint256 duration = pending[msg.sender][i].endBlock.sub(pending[msg.sender][i].startBlock);
+          uint256 amountPerBlock = pending[msg.sender][i].amount.div(duration);
+          uint256 unlockedBlocks = block.number > pending[msg.sender][i].startBlock.add(lockupPeriodBlocks)
+            ? block.number.sub(pending[msg.sender][i].startBlock.add(lockupPeriodBlocks)) : 0;
+          uint256 unlockedAmount = unlockedBlocks.mul(amountPerBlock);
           //remaining locked tokens
-          sumLocked += pending[msg.sender][i].amount - unlockedAmount - pending[msg.sender][i].alreadyClaimed;
+          sumLocked = sumLocked.add(pending[msg.sender][i].amount.sub(unlockedAmount.add(pending[msg.sender][i].alreadyClaimed)));
 
-          sumUnlocked += unlockedAmount - pending[msg.sender][i].alreadyClaimed;
-          pending[msg.sender][i].alreadyClaimed += unlockedAmount;
+          sumUnlocked = sumUnlocked.add(unlockedAmount.sub(pending[msg.sender][i].alreadyClaimed));
+          pending[msg.sender][i].alreadyClaimed = pending[msg.sender][i].alreadyClaimed.add(unlockedAmount);
 
           //if we are also claiming locked rewards, delete every element
           if (_claimLocked){
@@ -373,7 +374,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
       if (!_claimLocked){
         safeTokensTransfer(msg.sender, sumUnlocked);
       } else {
-        safeTokensTransfer(msg.sender, sumUnlocked + sumLocked.div(2));
+        safeTokensTransfer(msg.sender, sumUnlocked.add(sumLocked.div(2)));
         safeTokensTransfer(penaltyAddress, sumLocked.div(2));
       }
 
@@ -411,7 +412,8 @@ contract MasterChef is Ownable, ReentrancyGuard {
         } else {
           uint256 duration = pending[msg.sender][i].endBlock.sub(pending[msg.sender][i].startBlock);
           uint256 amountPerBlock = pending[msg.sender][i].amount.div(duration);
-          uint256 unlockedBlocks = pending[msg.sender][i].startBlock.mul(lockupPeriodBlocks >= block.number ? block.number - pending[msg.sender][i].startBlock - lockupPeriodBlocks : 0);
+          uint256 unlockedBlocks = block.number > pending[msg.sender][i].startBlock.add(lockupPeriodBlocks)
+            ? block.number.sub(pending[msg.sender][i].startBlock.add(lockupPeriodBlocks)) : 0;
           uint256 unlockedAmount = unlockedBlocks.mul(amountPerBlock);
           sumUnlocked += unlockedAmount.sub(pending[msg.sender][i].alreadyClaimed);
         }
@@ -433,7 +435,8 @@ contract MasterChef is Ownable, ReentrancyGuard {
         } else {
           uint256 duration = pending[msg.sender][i].endBlock.sub(pending[msg.sender][i].startBlock);
           uint256 amountPerBlock = pending[msg.sender][i].amount.div(duration);
-          uint256 unlockedBlocks = pending[msg.sender][i].startBlock.mul(lockupPeriodBlocks >= block.number ? block.number - pending[msg.sender][i].startBlock - lockupPeriodBlocks : 0);
+          uint256 unlockedBlocks = block.number > pending[msg.sender][i].startBlock.add(lockupPeriodBlocks)
+            ? block.number.sub(pending[msg.sender][i].startBlock.add(lockupPeriodBlocks)) : 0;
           uint256 unlockedAmount = unlockedBlocks.mul(amountPerBlock);
           sumLocked += pending[msg.sender][i].amount.sub(unlockedAmount.add(pending[msg.sender][i].alreadyClaimed));
         }
