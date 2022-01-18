@@ -89,13 +89,13 @@ describe("MasterChef", function () {
     expect(rewards / Math.pow(10, 16)).to.equal(expectedReward / Math.pow(10, 16))
   });
 
-  it("shoud collectPendingRewards", async function () {
+  it("shoud harvest rewards", async function () {
     let tokensPerBlock = await masterChef.tokensPerBlock()
     let rewards = await masterChef.pendingTokens(0, accounts[0].address)
 
     let pendingRewards = await masterChef.pendingTokens(0, accounts[0].address)
 
-    let pendingClaimsTx = await masterChef.collectPendingRewards()
+    let pendingClaimsTx = await masterChef.deposit(0, 0)
     await pendingClaimsTx.wait()
 
     let pendingLength = await masterChef.pendingLength(accounts[0].address)

@@ -334,7 +334,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
 
     /**
      * @notice Claim tokens from pending queue (for 1k pendingRewards, ~6M gas is used when claimimg them)
-     * @param _includeLocked Claim locked tokens too and only receive 50% of them, the rest is sent to penalty address
+     * @param _claimLocked Claim locked tokens too and only receive 50% of them, the rest is sent to penalty address
      * @param _limit In case if gas limit is lower than gas required to claim entire array of pendingRewards, use _limit to claim just a limited number of pendingRewards
      */
     function claim(bool _claimLocked, uint256 _limit) external nonReentrant {
@@ -346,25 +346,25 @@ contract MasterChef is Ownable, ReentrancyGuard {
       for (uint256 i = 0; i < _limit; i++){
         //already fully unlocked
         if (block.number - pending[msg.sender][i].endBlock >= lockupPeriodBlocks){
-          sumUnlocked += pending[msg.sender][i].amount - pending[msg.sender].alreadyClaimed;
+          sumUnlocked += pending[msg.sender][i].amount - pending[msg.sender][i].alreadyClaimed;
 
           pending[msg.sender][i].amount = 0;
         } else {
           uint256 duration = pending[msg.sender][i].endBlock - pending[msg.sender][i].startBlock;
           uint256 amountPerBlock = pending[msg.sender][i].amount / duration;
-          uint256 unlockedAmount = (block.number - pending[msg.sender][i].endBlock - lockupPeriodBlocks) * amountPerBlock; //!!!check math
+          uint256 unlockedAmount = (block.number - pending[msg.sender][i].startBlock - lockupPeriodBlocks) * amountPerBlock;
           //remaining locked tokens
-          sumLocked += pending[msg.sender][i].amount - unlockedAmount - pending[msg.sender].alreadyClaimed;
+          sumLocked += pending[msg.sender][i].amount - unlockedAmount - pending[msg.sender][i].alreadyClaimed;
 
-          sumUnlocked += unlockedAmount - pending[msg.sender].alreadyClaimed;
-          pending[msg.sender].alreadyClaimed += unlockedAmount;
+          sumUnlocked += unlockedAmount - pending[msg.sender][i].alreadyClaimed;
+          pending[msg.sender][i].alreadyClaimed += unlockedAmount;
         }
       }
 
       //remove only unlocked pendingRewards
       if (!_claimLocked){
         for (uint256 i = 0; i < _limit; i++){
-          if (pending[msg.sender].amount == pending[msg.sender].alreadyClaimed){ //already fully claimed
+          if (pending[msg.sender][i].amount == pending[msg.sender][i].alreadyClaimed){ //already fully claimed
             delete pending[msg.sender][i]; //reset the element
           }
         }
@@ -380,7 +380,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
         safeTokensTransfer(penaltyAddress, sumLocked.div(2));
       }
 
-      //Now remove deleted elements, so they won't stay in the array
+      //Now remove deleted elements, so they won't stay in the array, order is not important
       //Since using `delete` leaves a empty space, and using `for` loop could miss some elements,
       //we first check if element is unlocked and if it is, we replace with with last element and then pop it
       //Since last element can also be unlocked, we check, and retry again if it is
@@ -413,8 +413,8 @@ contract MasterChef is Ownable, ReentrancyGuard {
         } else {
           uint256 duration = pending[msg.sender][i].endBlock - pending[msg.sender][i].startBlock;
           uint256 amountPerBlock = pending[msg.sender][i].amount / duration;
-          uint256 unlockedAmount = (duration - lockupPeriodBlocks) * amountPerBlock;
-          sumUnlocked += unlockedAmount - pending[msg.sender].alreadyClaimed;
+          uint256 unlockedAmount = (block.number - pending[msg.sender][i].startBlock - lockupPeriodBlocks) * amountPerBlock;
+          sumUnlocked += unlockedAmount - pending[msg.sender][i].alreadyClaimed;
         }
       }
 
@@ -434,8 +434,8 @@ contract MasterChef is Ownable, ReentrancyGuard {
         } else {
           uint256 duration = pending[msg.sender][i].endBlock - pending[msg.sender][i].startBlock;
           uint256 amountPerBlock = pending[msg.sender][i].amount / duration;
-          uint256 unlockedAmount = (duration - lockupPeriodBlocks) * amountPerBlock;
-          sumLocked += pending[msg.sender][i].amount - unlockedAmount - pending[msg.sender].alreadyClaimed;
+          uint256 unlockedAmount = (block.number - pending[msg.sender][i].startBlock - lockupPeriodBlocks) * amountPerBlock; 
+          sumLocked += pending[msg.sender][i].amount - unlockedAmount - pending[msg.sender][i].alreadyClaimed;
         }
       }
 
