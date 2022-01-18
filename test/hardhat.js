@@ -89,21 +89,20 @@ describe("MasterChef", function () {
     expect(rewards / Math.pow(10, 16)).to.equal(expectedReward / Math.pow(10, 16))
   });
 
-  it("shoud collectPendingRewards", async function () {
+  it("shoud harvest rewards", async function () {
     let tokensPerBlock = await masterChef.tokensPerBlock()
     let rewards = await masterChef.pendingTokens(0, accounts[0].address)
 
-    let pendingRewards = await masterChef.pendingTokens(0, accounts[0].address)
-
-    let pendingClaimsTx = await masterChef.collectPendingRewards()
-    await pendingClaimsTx.wait()
+    let harvestPending = await masterChef.deposit(0, 0)
+    await harvestPending.wait()
 
     let pendingLength = await masterChef.pendingLength(accounts[0].address)
     let lockedTokens = await masterChef.lockedTokens(accounts[0].address)
     let unlockedTokens = await masterChef.unlockedTokens(accounts[0].address)
     let pendingAfterClaim = await masterChef.pendingTokens(0, accounts[0].address)
 
-    expect(lockedTokens.toString()).to.equal(pendingRewards.add(tokensPerBlock).toString()) //for some reason, pending has 1 block worth of rewards less
+
+    expect(lockedTokens.toString()).to.equal(rewards.add(tokensPerBlock).toString()) //harvest is one block later, so we add 1 block wirth of rewards
     expect(pendingLength.toNumber()).to.equal(1)
     expect(unlockedTokens.toNumber()).to.equal(0)
     expect(pendingAfterClaim.toNumber()).to.equal(0)
