@@ -382,7 +382,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
       //Since using `delete` leaves a empty space, and using `for` loop could miss some elements,
       //we first check if element is deleted and if it is, we replace with with last element and then pop it
       //Since last element can also be deleted, we check, and retry again if it is
-      //This will change the order 
+      //This will change the order
       uint256 i = 0;
       uint256 j = 0;
       while(j < _limit){
@@ -477,8 +477,6 @@ contract MasterChef is Ownable, ReentrancyGuard {
                   0
               ));
             }
-
-            lastClaim[msg.sender] = block.number;
         }
         if (_wantAmt > 0) {
             pool.want.safeTransferFrom(
@@ -492,6 +490,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
                 IStrategy(poolInfo[_pid].strat).deposit(msg.sender, _wantAmt);
             user.shares = user.shares.add(sharesAdded);
         }
+        lastClaim[msg.sender] = block.number;
         user.rewardDebt = user.shares.mul(pool.accTokensPerShare).div(1e12);
         emit Deposit(msg.sender, _pid, _wantAmt);
     }
@@ -527,9 +526,6 @@ contract MasterChef is Ownable, ReentrancyGuard {
               0
           ));
         }
-
-        lastClaim[msg.sender] = block.number;
-
         // Withdraw want tokens
         uint256 amount = user.shares.mul(wantLockedTotal).div(sharesTotal);
         if (_wantAmt > amount) {
@@ -551,6 +547,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
             }
             pool.want.safeTransfer(address(msg.sender), _wantAmt);
         }
+        lastClaim[msg.sender] = block.number;
         user.rewardDebt = user.shares.mul(pool.accTokensPerShare).div(1e12);
         emit Withdraw(msg.sender, _pid, _wantAmt);
     }
