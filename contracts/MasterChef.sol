@@ -405,17 +405,17 @@ contract MasterChef is Ownable, ReentrancyGuard {
     function unlockedTokens(address _user) external view returns (uint256) {
       uint256 sumUnlocked;
 
-      for (uint256 i = 0; i < pending[msg.sender].length; i++){
+      for (uint256 i = 0; i < pending[_user].length; i++){
         //already fully unlocked
-        if (block.number.sub(pending[msg.sender][i].endBlock) >= lockupPeriodBlocks){
-          sumUnlocked += pending[msg.sender][i].amount - pending[msg.sender][i].alreadyClaimed;
+        if (block.number.sub(pending[_user][i].endBlock) >= lockupPeriodBlocks){
+          sumUnlocked += pending[_user][i].amount - pending[_user][i].alreadyClaimed;
         } else {
-          uint256 duration = pending[msg.sender][i].endBlock.sub(pending[msg.sender][i].startBlock);
-          uint256 amountPerBlock = pending[msg.sender][i].amount.div(duration);
-          uint256 unlockedBlocks = block.number > pending[msg.sender][i].startBlock.add(lockupPeriodBlocks)
-            ? block.number.sub(pending[msg.sender][i].startBlock.add(lockupPeriodBlocks)) : 0;
+          uint256 duration = pending[_user][i].endBlock.sub(pending[_user][i].startBlock);
+          uint256 amountPerBlock = pending[_user][i].amount.div(duration);
+          uint256 unlockedBlocks = block.number > pending[_user][i].startBlock.add(lockupPeriodBlocks)
+            ? block.number.sub(pending[_user][i].startBlock.add(lockupPeriodBlocks)) : 0;
           uint256 unlockedAmount = unlockedBlocks.mul(amountPerBlock);
-          sumUnlocked += unlockedAmount.sub(pending[msg.sender][i].alreadyClaimed);
+          sumUnlocked += unlockedAmount.sub(pending[_user][i].alreadyClaimed);
         }
       }
 
@@ -429,16 +429,16 @@ contract MasterChef is Ownable, ReentrancyGuard {
     function lockedTokens(address _user) external view returns (uint256) {
       uint256 sumLocked = 0;
 
-      for (uint256 i = 0; i < pending[msg.sender].length; i++){
-        if (block.number.sub(pending[msg.sender][i].endBlock) >= lockupPeriodBlocks){
+      for (uint256 i = 0; i < pending[_user].length; i++){
+        if (block.number.sub(pending[_user][i].endBlock) >= lockupPeriodBlocks){
           //already fully unlocked
         } else {
-          uint256 duration = pending[msg.sender][i].endBlock.sub(pending[msg.sender][i].startBlock);
-          uint256 amountPerBlock = pending[msg.sender][i].amount.div(duration);
-          uint256 unlockedBlocks = block.number > pending[msg.sender][i].startBlock.add(lockupPeriodBlocks)
-            ? block.number.sub(pending[msg.sender][i].startBlock.add(lockupPeriodBlocks)) : 0;
+          uint256 duration = pending[_user][i].endBlock.sub(pending[_user][i].startBlock);
+          uint256 amountPerBlock = pending[_user][i].amount.div(duration);
+          uint256 unlockedBlocks = block.number > pending[_user][i].startBlock.add(lockupPeriodBlocks)
+            ? block.number.sub(pending[_user][i].startBlock.add(lockupPeriodBlocks)) : 0;
           uint256 unlockedAmount = unlockedBlocks.mul(amountPerBlock);
-          sumLocked += pending[msg.sender][i].amount.sub(unlockedAmount.add(pending[msg.sender][i].alreadyClaimed));
+          sumLocked += pending[_user][i].amount.sub(unlockedAmount.add(pending[_user][i].alreadyClaimed));
         }
       }
 
