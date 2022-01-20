@@ -4,9 +4,6 @@ RENAME:
   - `PENALTY_ADDRESS` to `penaltyAddress`
   - `LOCKUP_PERIOD_BLOCKS` to `lockupPeriodBlocks`
 
-  - `addPendingClaims()` to `collectPendingRewards()`
-
-
 Change `claim()` to add second param `limit`, can be set to 0 by default: `claim(bool, uint256)`
 
 
