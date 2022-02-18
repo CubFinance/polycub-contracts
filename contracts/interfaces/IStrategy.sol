@@ -13,12 +13,12 @@ interface IStrategy {
     function earn() external;
 
     // Transfer want tokens kingdom -> strategy
-    function deposit(address _userAddress, uint256 _wantAmt)
+    function deposit(uint256 _wantAmt)
         external
         returns (uint256);
 
     // Transfer want tokens strategy -> kingdom
-    function withdraw(address _userAddress, uint256 _wantAmt)
+    function withdraw(uint256 _wantAmt)
         external
         returns (uint256);
 

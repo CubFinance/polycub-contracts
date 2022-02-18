@@ -493,7 +493,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
 
             pool.want.safeIncreaseAllowance(pool.strat, _wantAmt);
             uint256 sharesAdded =
-                IStrategy(poolInfo[_pid].strat).deposit(msg.sender, _wantAmt);
+                IStrategy(poolInfo[_pid].strat).deposit(_wantAmt);
             user.shares = user.shares.add(sharesAdded);
         }
         lastClaim[msg.sender] = block.number;
@@ -539,7 +539,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
         }
         if (_wantAmt > 0) {
             uint256 sharesRemoved =
-                IStrategy(poolInfo[_pid].strat).withdraw(msg.sender, _wantAmt);
+                IStrategy(poolInfo[_pid].strat).withdraw(_wantAmt);
 
             if (sharesRemoved > user.shares) {
                 user.shares = 0;
@@ -579,7 +579,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
         uint256 sharesTotal = IStrategy(poolInfo[_pid].strat).sharesTotal();
         uint256 amount = user.shares.mul(wantLockedTotal).div(sharesTotal);
 
-        IStrategy(poolInfo[_pid].strat).withdraw(msg.sender, amount);
+        IStrategy(poolInfo[_pid].strat).withdraw(amount);
 
         uint256 thisBalance = pool.want.balanceOf(address(this));
         if (amount > thisBalance){

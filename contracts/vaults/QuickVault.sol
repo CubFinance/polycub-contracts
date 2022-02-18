@@ -1780,7 +1780,7 @@ abstract contract PolyCub_QuickSwapVault is Ownable, ReentrancyGuard, Pausable {
     }
 
     // Receives new deposits from user
-    function deposit(address _userAddress, uint256 _wantAmt)
+    function deposit(uint256 _wantAmt)
         public
         virtual
         onlyOwner
@@ -1830,7 +1830,7 @@ abstract contract PolyCub_QuickSwapVault is Ownable, ReentrancyGuard, Pausable {
         IQuickStaker(farmContractAddress).exit(_wantAmt);
     }
 
-    function withdraw(address _userAddress, uint256 _wantAmt)
+    function withdraw(uint256 _wantAmt)
         public
         virtual
         onlyOwner
