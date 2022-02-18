@@ -35,9 +35,9 @@ MCC-04
 See:
 https://github.com/CubFinance/polycub-contracts/commit/b4bac4653cb55eab9be71cf6a8be5446f472959e
 
-https://github.com/CubFinance/polycub-contracts/blob/master/contracts/MasterChef.sol#L473
+https://github.com/CubFinance/polycub-contracts/blob/master/contracts/MasterChef.sol#L479
 
-https://github.com/CubFinance/polycub-contracts/blob/master/contracts/MasterChef.sol#L522
+https://github.com/CubFinance/polycub-contracts/blob/master/contracts/MasterChef.sol#L528
 
 ---
 
@@ -46,9 +46,9 @@ MCC-05
 Already resolved on jan-19-2022
 
 See:
-https://github.com/CubFinance/polycub-contracts/blob/master/contracts/MasterChef.sol#L343
+https://github.com/CubFinance/polycub-contracts/blob/master/contracts/MasterChef.sol#L346
 
-https://github.com/CubFinance/polycub-contracts/blob/master/contracts/MasterChef.sol#L389
+https://github.com/CubFinance/polycub-contracts/blob/master/contracts/MasterChef.sol#L396
 
 https://github.com/CubFinance/polycub-contracts/commit/12912796a97ac94ade32ebf2bc9f8de7a06cade6
 
@@ -59,7 +59,7 @@ MCC-06
 Already resolved
 
 See:
-https://github.com/CubFinance/polycub-contracts/blame/master/contracts/MasterChef.sol#L375
+https://github.com/CubFinance/polycub-contracts/blame/master/contracts/MasterChef.sol#L381
 
 https://github.com/CubFinance/polycub-contracts/commit/12912796a97ac94ade32ebf2bc9f8de7a06cade6
 
@@ -74,7 +74,7 @@ MCC-07
 MCC-08
 
 Already resolved, see:
-https://github.com/CubFinance/polycub-contracts/blame/master/contracts/MasterChef.sol#L399
+https://github.com/CubFinance/polycub-contracts/blame/master/contracts/MasterChef.sol#L404
 
 ---
 
@@ -92,7 +92,7 @@ Resolved: https://github.com/CubFinance/polycub-contracts/commit/9a029e2e61d1b69
 
 MCC-11
 
-Function is now used here: https://github.com/CubFinance/polycub-contracts/blame/master/contracts/MasterChef.sol#L375
+Function is now used here: https://github.com/CubFinance/polycub-contracts/blame/master/contracts/MasterChef.sol#L381
 
 ---
 
