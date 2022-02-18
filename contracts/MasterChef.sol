@@ -118,6 +118,9 @@ contract MasterChef is Ownable, ReentrancyGuard {
      * @param newRewardToken The address of the reward token
      */
     constructor(address newPenaltyAddress, uint256 newStartBlock, address newRewardToken) public {
+      require(newPenaltyAddress != address(0), '!address(0)');
+      require(newRewardToken != address(0), '!address(0)');
+
       penaltyAddress = newPenaltyAddress;
       rewardToken = newRewardToken;
 
@@ -664,6 +667,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
      * @param _newPenaltyAddress new penalty address
      */
     function setPenaltyAddress(address _newPenaltyAddress) external onlyOwner {
+      require(_newPenaltyAddress != address(0), '!address(0)');
       penaltyAddress = _newPenaltyAddress;
       emit updatePenaltyAddress(_newPenaltyAddress);
     }
