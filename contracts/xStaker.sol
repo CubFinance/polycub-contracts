@@ -691,9 +691,7 @@ contract ERC20 is Context, IERC20 {
 interface MainStaking {
   function deposit(uint256 _pid, uint256 _wantAmt) external;
   function unlockedTokens(address _user) external returns (uint256);
-  function claim(bool _all) external;
-  function claimLimited(uint256 limit) external;
-  function addPendingClaims() external;
+  function claim(bool _all, uint256 _limit) external;
 }
 
 // Fork of SushiBar
@@ -703,6 +701,7 @@ contract xStaker is ERC20("xPolyCub", "xPOLYCUB"){
     address public admin;
     address public mainStakingContract;
     bool public rewardsEnabled = false;
+    uint256 public pid;
 
     constructor(IERC20 _token, address _admin, address _mainStaking) public {
         require(_admin != address(0), "!address(0)");
@@ -723,7 +722,9 @@ contract xStaker is ERC20("xPolyCub", "xPOLYCUB"){
             uint256 what = _amount.mul(totalShares).div(totalTokens);
             _mint(msg.sender, what);
         }
-        token.transferFrom(msg.sender, address(this), _amount);
+
+        bool sucess = token.transferFrom(msg.sender, address(this), _amount);
+        require(sucess, "transferFrom failed");
 
         if (rewardsEnabled){
           claimRewards(true, 0);
@@ -732,10 +733,12 @@ contract xStaker is ERC20("xPolyCub", "xPOLYCUB"){
 
     // Claim back your tokens.
     function leave(uint256 _share) public {
-        uint256 totalShares = totalSupply();
-        uint256 what = _share.mul(token.balanceOf(address(this))).div(totalShares);
-        _burn(msg.sender, _share);
-        token.transfer(msg.sender, what);
+      uint256 totalShares = totalSupply();
+      uint256 what = _share.mul(token.balanceOf(address(this))).div(totalShares);
+      _burn(msg.sender, _share);
+
+      bool sucess = token.transfer(msg.sender, what);
+      require(sucess, "transfer failed");
 
       if (rewardsEnabled){
         claimRewards(true, 0);
@@ -748,25 +751,25 @@ contract xStaker is ERC20("xPolyCub", "xPOLYCUB"){
       require(_placeholderToken != address(token), "Mmmm, no no no");
 
       mainStakingContract = _mainStaking;
+      pid = _pid;
 
       IERC20(_placeholderToken).approve(_mainStaking, 1);
       MainStaking(_mainStaking).deposit(_pid, 1);
-    }
 
-    function claimRewards(bool _all, uint256 _limit) public {
-      MainStaking(mainStakingContract).addPendingClaims();
-
-      if (_all){
-        MainStaking(mainStakingContract).claim(true);
-      } else {
-        MainStaking(mainStakingContract).claimLimited(_limit);
+      if (!rewardsEnabled){
+        toggleRewards();
       }
     }
 
-    function enableRewards() external {
+    function claimRewards(bool _all, uint256 _limit) public {
+      MainStaking(mainStakingContract).deposit(pid, 0);
+
+      MainStaking(mainStakingContract).claim(_all, _limit);
+    }
+
+    function toggleRewards() public {
       require(msg.sender == admin, "!admin");
 
-      if (rewardsEnabled) rewardsEnabled = false;
-      else rewardsEnabled = true;
+      rewardsEnabled = !rewardsEnabled;
     }
 }
