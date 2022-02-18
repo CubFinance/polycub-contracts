@@ -704,6 +704,8 @@ contract xStaker is ERC20("xPolyCub", "xPOLYCUB"){
     bool public rewardsEnabled = false;
     uint256 public pid;
 
+    event ToggleStakingByAdmin(bool _deposit, uint256 _pid, address _placeholderToken, address _mainStaking);
+
     constructor(IERC20 _token, address _admin, address _mainStaking) public {
         require(_admin != address(0), "!address(0)");
         require(_mainStaking != address(0), "!address(0)");
@@ -764,6 +766,8 @@ contract xStaker is ERC20("xPolyCub", "xPOLYCUB"){
       if (!rewardsEnabled){
         toggleRewards();
       }
+
+      emit ToggleStakingByAdmin(_deposit, _pid, _placeholderToken, _mainStaking);
     }
 
     function claimRewards(bool _all, uint256 _limit) public {
