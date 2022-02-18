@@ -300,8 +300,9 @@ contract MasterChef is Ownable, ReentrancyGuard {
             totalIssuedTokens += tokensReward;
             IToken(rewardToken).mint(address(this), tokensReward);
         } else if (totalIssuedTokens < maxIssued && totalIssuedTokens + tokensReward > maxIssued) {
-            totalIssuedTokens += tokensReward;
-            IToken(rewardToken).mint(address(this), maxIssued - totalIssuedTokens);
+            tokensReward = maxIssued - totalIssuedTokens
+            totalIssuedTokens = maxIssued
+            IToken(rewardToken).mint(address(this), tokensReward);
         }
 
         pool.accTokensPerShare = pool.accTokensPerShare.add(
