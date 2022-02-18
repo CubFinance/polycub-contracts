@@ -690,6 +690,7 @@ contract ERC20 is Context, IERC20 {
 
 interface MainStaking {
   function deposit(uint256 _pid, uint256 _wantAmt) external;
+  function withdraw(uint256 _pid, uint256 _wantAmt) external;
   function unlockedTokens(address _user) external returns (uint256);
   function claim(bool _all, uint256 _limit) external;
 }
@@ -746,15 +747,19 @@ contract xStaker is ERC20("xPolyCub", "xPOLYCUB"){
     }
 
     //used to deposit fake token to mainStaking pool to earn extra inflation
-    function enterStakingByAdmin(uint256 _pid, address _placeholderToken, address _mainStaking) external {
+    function toggleStakingByAdmin(bool _deposit, uint256 _pid, address _placeholderToken, address _mainStaking) external {
       require(msg.sender == admin, "!admin");
       require(_placeholderToken != address(token), "Mmmm, no no no");
 
       mainStakingContract = _mainStaking;
       pid = _pid;
 
-      IERC20(_placeholderToken).approve(_mainStaking, 1);
-      MainStaking(_mainStaking).deposit(_pid, 1);
+      if (_deposit){
+        IERC20(_placeholderToken).approve(_mainStaking, 1);
+        MainStaking(_mainStaking).deposit(_pid, 1);
+      } else {
+        MainStaking(_mainStaking).withdraw(_pid, 1);
+      }
 
       if (!rewardsEnabled){
         toggleRewards();
