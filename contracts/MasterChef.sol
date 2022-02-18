@@ -578,6 +578,11 @@ contract MasterChef is Ownable, ReentrancyGuard {
 
         IStrategy(poolInfo[_pid].strat).withdraw(msg.sender, amount);
 
+        uint256 thisBalance = pool.want.balanceOf(address(this));
+        if (amount > thisBalance){
+          amount = thisBalance;
+        }
+
         pool.want.safeTransfer(address(msg.sender), amount);
         emit EmergencyWithdraw(msg.sender, _pid, amount);
         user.shares = 0;
