@@ -12,7 +12,7 @@ We are aware of risks and will not support fee-on-transfer tokens.
 
 MCC-01
 
-Using `x <= 0` is 3 gas cheaper compared to `x == 0`
+Using `x <= 0` is not cheaper compared to `x == 0` (both use equal amount of gas).
 
 ---
 
