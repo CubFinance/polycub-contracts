@@ -734,16 +734,16 @@ contract xStaker is ERC20("xPolyCub", "xPOLYCUB"){
 
     // Claim back your tokens.
     function leave(uint256 _share) public {
+      if (rewardsEnabled){
+        claimRewards(true, 0);
+      }
+      
       uint256 totalShares = totalSupply();
       uint256 what = _share.mul(token.balanceOf(address(this))).div(totalShares);
       _burn(msg.sender, _share);
 
       bool sucess = token.transfer(msg.sender, what);
       require(sucess, "transfer failed");
-
-      if (rewardsEnabled){
-        claimRewards(true, 0);
-      }
     }
 
     //used to deposit fake token to mainStaking pool to earn extra inflation
