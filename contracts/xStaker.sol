@@ -715,21 +715,21 @@ contract xStaker is ERC20("xPolyCub", "xPOLYCUB"){
 
     // Pay some tokens. Earn some shares.
     function enter(uint256 _amount) public {
-        uint256 totalTokens = token.balanceOf(address(this));
-        uint256 totalShares = totalSupply();
-        if (totalShares == 0 || totalTokens == 0) {
-            _mint(msg.sender, _amount);
-        } else {
-            uint256 what = _amount.mul(totalShares).div(totalTokens);
-            _mint(msg.sender, what);
-        }
+      if (rewardsEnabled){
+        claimRewards(true, 0);
+      }
 
-        bool sucess = token.transferFrom(msg.sender, address(this), _amount);
-        require(sucess, "transferFrom failed");
+      uint256 totalTokens = token.balanceOf(address(this));
+      uint256 totalShares = totalSupply();
+      if (totalShares == 0 || totalTokens == 0) {
+          _mint(msg.sender, _amount);
+      } else {
+          uint256 what = _amount.mul(totalShares).div(totalTokens);
+          _mint(msg.sender, what);
+      }
 
-        if (rewardsEnabled){
-          claimRewards(true, 0);
-        }
+      bool sucess = token.transferFrom(msg.sender, address(this), _amount);
+      require(sucess, "transferFrom failed");
     }
 
     // Claim back your tokens.
@@ -737,7 +737,7 @@ contract xStaker is ERC20("xPolyCub", "xPOLYCUB"){
       if (rewardsEnabled){
         claimRewards(true, 0);
       }
-      
+
       uint256 totalShares = totalSupply();
       uint256 what = _share.mul(token.balanceOf(address(this))).div(totalShares);
       _burn(msg.sender, _share);
