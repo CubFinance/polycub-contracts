@@ -34,7 +34,9 @@ MCC-04
 
 See:
 https://github.com/CubFinance/polycub-contracts/commit/b4bac4653cb55eab9be71cf6a8be5446f472959e
+
 https://github.com/CubFinance/polycub-contracts/blob/master/contracts/MasterChef.sol#L473
+
 https://github.com/CubFinance/polycub-contracts/blob/master/contracts/MasterChef.sol#L522
 
 ---
@@ -45,7 +47,9 @@ Already resolved on jan-19-2022
 
 See:
 https://github.com/CubFinance/polycub-contracts/blob/master/contracts/MasterChef.sol#L343
+
 https://github.com/CubFinance/polycub-contracts/blob/master/contracts/MasterChef.sol#L389
+
 https://github.com/CubFinance/polycub-contracts/commit/12912796a97ac94ade32ebf2bc9f8de7a06cade6
 
 ---
@@ -56,6 +60,7 @@ Already resolved
 
 See:
 https://github.com/CubFinance/polycub-contracts/blame/master/contracts/MasterChef.sol#L375
+
 https://github.com/CubFinance/polycub-contracts/commit/12912796a97ac94ade32ebf2bc9f8de7a06cade6
 
 ---
