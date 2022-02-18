@@ -705,6 +705,10 @@ contract xStaker is ERC20("xPolyCub", "xPOLYCUB"){
     bool public rewardsEnabled = false;
 
     constructor(IERC20 _token, address _admin, address _mainStaking) public {
+        require(_token != address(0), "!address(0)");
+        require(_admin != address(0), "!address(0)");
+        require(_mainStaking != address(0), "!address(0)");
+
         token = _token;
         admin = _admin;
         mainStakingContract = _mainStaking;
