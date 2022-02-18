@@ -22,7 +22,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
     /// @notice Address of the reward token
     address public rewardToken;
     /// @notice Maximum number of issued tokens, 24.7M issues, 1.3M minted at launch (200k dev fund, 1M airdrop, 100k initial liquidity) = 26M total
-    uint256 public maxIssued = 24700000000000000000000000;
+    uint256 public maxIssued = 24700000 ether;
 
     /// @notice Info of each user.
     struct UserInfo {
@@ -52,7 +52,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
     }
 
     /// @notice Number of tokens issued per block
-    uint256 public tokensPerBlock = 5000000000000000;
+    uint256 public tokensPerBlock = 5 ether;
     /// @notice Block number from where inflation schedule is counted
     uint256 public startBlock = 0;
 
