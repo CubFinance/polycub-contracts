@@ -50,7 +50,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
     }
 
     /// @notice Number of tokens issued per block
-    uint256 public tokensPerBlock = 5 ether;
+    uint256 public tokensPerBlock = 0;
     /// @notice Block number from where inflation schedule is counted
     uint256 public startBlock = 0;
 
