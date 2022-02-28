@@ -20,11 +20,11 @@ interface ICurveRewardsOnlyGauge {
 }
 
 interface ICurveStableSwapAave {
-  function add_liquidity(uint256[5] memory _amounts, uint256 _min_mint_amount) external;
+  function add_liquidity(uint256[3] memory _amounts, uint256 _min_mint_amount) external;
 }
 
 interface ICurveStableSwap {
-  function add_liquidity(uint256[3] memory _amounts, uint256 _min_mint_amount) external;
+  function add_liquidity(uint256[5] memory _amounts, uint256 _min_mint_amount) external;
 }
 
 interface IReward {

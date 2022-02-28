@@ -7,7 +7,7 @@ let govAddress = '0xA1982835170d0C2ba789370918F19122D63943A2'
 let rewardsAddress = '0x2CAA7b86767969048029c27C1A62612c980eB4b8' //treasury
 let deadAddress = '0x000000000000000000000000000000000000dEaD'
 
-let xPolycubRewardFakeToken =
+let xPolycubRewardFakeToken = '';
 
 async function main() {
   const Token = await ethers.getContractFactory("POLYCUB");

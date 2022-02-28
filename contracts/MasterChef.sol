@@ -10,8 +10,6 @@ import "./interfaces/ReentrancyGuard.sol";
 import "./interfaces/IStrategy.sol";
 import "./interfaces/IToken.sol";
 
-import "hardhat/console.sol";
-
 /// @title MasterChef yield farming contract
 /// @author CubFinance, @fbsloXBT
 
