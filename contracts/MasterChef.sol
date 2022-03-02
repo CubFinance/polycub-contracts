@@ -131,7 +131,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
       uint256[4] memory _emissionDelays = [0 * blockPerWeek, 1 * blockPerWeek, 2 * blockPerWeek, 3 * blockPerWeek];
 
       for (uint256 i = 0; i < _emissionAmounts.length; i++){
-        emissionScheduleArray.push(EmissionSchedule(_emissionAmounts[i], newStartBlock + _emissionDelays[i]));
+        emissionScheduleArray.push(EmissionSchedule(_emissionAmounts[i], newStartBlock + _emissionDelays[i], false));
       }
     }
 
@@ -637,7 +637,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
         emissionScheduleLatest = 0;
 
         for (uint256 i = 0; i < _emissionAmounts.length; i++){
-            emissionScheduleArray[i] = EmissionSchedule(_emissionAmounts[i], _startBlock + _emissionDelays[i]);
+            emissionScheduleArray[i] = EmissionSchedule(_emissionAmounts[i], _startBlock + _emissionDelays[i], false);
         }
     }
 
