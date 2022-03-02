@@ -308,9 +308,9 @@ contract Curve_PolyCub_Vault is Ownable, ReentrancyGuard, Pausable {
       );
 
       if (isAave){
-        ICurveStableSwapAave(curvePoolAddress).add_liquidity([0, 0, 0, 0, token0Amt], 0);
+        ICurveStableSwapAave(curvePoolAddress).add_liquidity([0, 0, token0Amt], 0);
       } else {
-        ICurveStableSwap(curvePoolAddress).add_liquidity([0, 0, token0Amt], 0);
+        ICurveStableSwap(curvePoolAddress).add_liquidity([0, 0, 0, 0, token0Amt], 0);
       }
     }
 
