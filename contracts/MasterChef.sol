@@ -86,6 +86,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
     struct EmissionSchedule {
       uint256 amount;
       uint256 startBlock;
+      bool alreadyUpdated;
     }
     /// @notice Array stroing EmissionSchedule structs that are string information about reward emissions
     EmissionSchedule[] public emissionScheduleArray;
@@ -320,8 +321,9 @@ contract MasterChef is Ownable, ReentrancyGuard {
       if (block.number < startBlock + (blockPerDay * 7 * 4)){
         if (emissionScheduleArray.length >= emissionScheduleLatest + 1){
           //update emission schedule
-          if (emissionScheduleArray[emissionScheduleLatest].startBlock <= block.number){
+          if (emissionScheduleArray[emissionScheduleLatest].startBlock <= block.number && !emissionScheduleArray[emissionScheduleLatest].alreadyUpdated){
             tokensPerBlock = emissionScheduleArray[emissionScheduleLatest].amount;
+            emissionScheduleArray[emissionScheduleLatest].alreadyUpdated = true;
             emissionScheduleLatest += 1;
             emit UpdateEmissionRate(tokensPerBlock);
           }
