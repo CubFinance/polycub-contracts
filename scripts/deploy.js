@@ -9,52 +9,57 @@ let deadAddress = '0x000000000000000000000000000000000000dEaD'
 
 let xPolycubRewardFakeToken = '';
 
+const START_BLOCK = 25575000;
+
 async function main() {
   const Token = await ethers.getContractFactory("POLYCUB");
-  token = await Token.deploy();
-  await token.deployed()
-  await queueVerifications(token.address, [])
+  // token = await Token.deploy();
+  // await token.deployed()
+  // await queueVerifications(token.address, [])
 
   const MasterChef = await ethers.getContractFactory("MasterChef");
-  masterChef = await MasterChef.deploy('0x000000000000000000000000000000000000dEaD', 0, token.address)
-  await masterChef.deployed()
-  await queueVerifications(masterChef.address, ['0x000000000000000000000000000000000000dEaD', 0, token.address])
+  // masterChef = await MasterChef.deploy('0x000000000000000000000000000000000000dEaD', START_BLOCK, token.address)
+  // await masterChef.deployed()
+  // await queueVerifications(masterChef.address, ['0x000000000000000000000000000000000000dEaD', START_BLOCK, token.address])
 
   const Staker = await ethers.getContractFactory("xStaker");
-  staker = await Staker.deploy(token.address, admin, masterChef.address)
-  await staker.deployed()
-  await queueVerifications(staker.address, [token.address, admin, masterChef.address])
+  // staker = await Staker.deploy(token.address, admin, masterChef.address)
+  // await staker.deployed()
+  // await queueVerifications(staker.address, [token.address, admin, masterChef.address])
 
-  let mint = await token.mint(admin, '1300000000000000000000000')
-  await mint.wait();
-  let transferOwnership = await token.transferOwnership(masterChef.address)
-  await transferOwnership.wait();
+  // let mint = await token.mint(admin, '1300000000000000000000000')
+  // await mint.wait();
+  // let transferOwnership = await token.transferOwnership(masterChef.address)
+  // await transferOwnership.wait();
 
   //change pealty address
-  let setPenaltyAddress = await masterChef.setPenaltyAddress(staker.address);
-  await setPenaltyAddress.wait()
+  // let setPenaltyAddress = await masterChef.setPenaltyAddress(staker.address);
+  // await setPenaltyAddress.wait()
 
-  await deployNativeVaults(masterChef.address, masterChef)
-  await deploySushiVaults(token.address, masterChef.address, masterChef)
+  token = await Token.attach("0xebf68f5d50ea36a6b63c5d5bee45476087c130cc");
+  masterChef = await MasterChef.attach("0x84bd9703F42AEaf956c93Ab2e42404934a7B3396");
+
+  // await deployNativeVaults(masterChef.address, masterChef)
+  // await deploySushiVaults(token.address, masterChef.address, masterChef)
   await deployCurveVaults(masterChef.address, masterChef)
 }
 
 async function deployNativeVaults(masterChef, masterChefInstance){
   let vaults = [{
     name: "polycub-usdc",
-    want: "",
+    want: "0x401ffaedee53fb2bc5b21cb6f6d115a3ae6c6b80",
     allocPoints: 150
   }, {
     name: "polycub-weth",
-    want: "",
+    want: "0x4aCb93B9DBEd73C2aB2997A4BDe6460AE086Aac6",
     allocPoints: 150
   }, {
     name: "pleo-matic",
-    want: "",
+    want: "0xf8095Ffd24F02BD8aEDC96e5A3617310815cC4C7",
     allocPoints: 100
   }, {
     name: "xPolycub-vault",
-    want: "",
+    want: "0xcdef6b2357f7738e75805d6897b8631a6ed9b81b",
     allocPoints: 300
   }]
 
@@ -63,14 +68,15 @@ async function deployNativeVaults(masterChef, masterChefInstance){
     nativeVault = await NativeVault.deploy(masterChef, vaults[i].want)
     await nativeVault.deployed()
 
-    await addVaultToMasterChef(masterChefInstance, nativeVault.address, vaults[i].want, vaults[i].allocPoints, vaults[i].name)
     await queueVerifications(nativeVault.address, [masterChef, vaults[i].want])
+    await addVaultToMasterChef(masterChefInstance, nativeVault.address, vaults[i].want, vaults[i].allocPoints, vaults[i].name)
     console.log(`Deployed: ${vaults[i].name}: ${nativeVault.address}`)
   }
 }
 
 async function deployCurveVaults(masterChef, masterChefInstance){
-  let vaults = [{
+  let vaults = [
+    {
     name: "CURVE-USD-BTC-ETH-atricrypto3",
     rewarders: ['0x703F98CB0DA4b8bf64e1C7549e49d140C0acbF94', '0x36477AF584988cb79e2991bfa5CfF2CE275435BE'],
     farmContractAddress: '0x3B6B158A76fd8ccc297538F454ce7B4787778c7C',
@@ -88,7 +94,8 @@ async function deployCurveVaults(masterChef, masterChefInstance){
     getWantTokenLink: 'https://polygon.curve.fi/atricrypto3/deposit',
     isAave: false,
     allocPoints: 75
-  }, {
+  },
+  {
     name: "CURVE-DAI-USDT-USDC-aave",
     rewarders: ["0x0Ba440288a9d2DE45a705CAF1c6877699954dDb2", "0x36477AF584988cb79e2991bfa5CfF2CE275435BE"],
     farmContractAddress: '0x19793B454D3AfC7b454F206Ffe95aDE26cA6912c',
@@ -117,13 +124,13 @@ async function deployCurveVaults(masterChef, masterChefInstance){
       vaults[i].withdrawFeeFactor, vaults[i].reward_contract, vaults[i].curvePoolAddress, vaults[i].isAave
     )
     await curveVault.deployed()
-    await addVaultToMasterChef(masterChefInstance, curveVault.address, vaults[i].wantAddress, vaults[i].allocPoints, vaults[i].name)
     await queueVerifications(curveVault.address, [
       vaults[i].farmContractAddress, vaults[i].rewarders, vaults[i].CRVToUSDCPath, vaults[i].masterChefAddress,
       vaults[i].wantAddress, govAddress, rewardsAddress, vaults[i].uniRouterAddress,
       vaults[i].token0Address, vaults[i].earnedToToken0Path, vaults[i].earnedAddress, vaults[i].entranceFeeFactor,
       vaults[i].withdrawFeeFactor, vaults[i].reward_contract, vaults[i].curvePoolAddress, vaults[i].isAave
     ])
+    await addVaultToMasterChef(masterChefInstance, curveVault.address, vaults[i].wantAddress, vaults[i].allocPoints, vaults[i].name)
     console.log(`Deployed: ${vaults[i].name}: ${curveVault.address}`)
   }
 }

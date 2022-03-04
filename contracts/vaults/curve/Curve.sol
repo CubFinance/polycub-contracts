@@ -155,7 +155,7 @@ contract Curve_PolyCub_Vault is Ownable, ReentrancyGuard, Pausable {
   }
 
   // Receives new deposits from user
-  function deposit(address _userAddress, uint256 _wantAmt)
+  function deposit(uint256 _wantAmt)
     public
     onlyOwner
     nonReentrant
@@ -186,7 +186,7 @@ contract Curve_PolyCub_Vault is Ownable, ReentrancyGuard, Pausable {
       _farm();
     }
 
-    _harvestReward(_userAddress, sharesAdded, false);
+    _harvestReward(address(this), sharesAdded, false);
 
     return sharesAdded;
   }
@@ -209,7 +209,7 @@ contract Curve_PolyCub_Vault is Ownable, ReentrancyGuard, Pausable {
     }
   }
 
-  function withdraw(address _userAddress, uint256 _wantAmt)
+  function withdraw(uint256 _wantAmt)
     public
     onlyOwner
     nonReentrant
@@ -252,7 +252,7 @@ contract Curve_PolyCub_Vault is Ownable, ReentrancyGuard, Pausable {
       address(this)
     );
 
-    _harvestReward(_userAddress, sharesRemoved, true);
+    _harvestReward(address(this), sharesRemoved, true);
 
     return sharesRemoved;
   }
