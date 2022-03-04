@@ -413,7 +413,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
 
       for (uint256 i = 0; i < pending[_user].length; i++){
         //already fully unlocked
-        if (block.number >= pending[_user][i].endBlock){
+        if (block.number.sub(lockupPeriodBlocks) >= pending[_user][i].endBlock){
           sumUnlocked += pending[_user][i].amount - pending[_user][i].alreadyClaimed;
         } else {
           uint256 duration = pending[_user][i].endBlock.sub(pending[_user][i].startBlock);
@@ -436,7 +436,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
       uint256 sumLocked = 0;
 
       for (uint256 i = 0; i < pending[_user].length; i++){
-        if (block.number >= pending[_user][i].endBlock){
+        if (block.number.sub(lockupPeriodBlocks) >= pending[_user][i].endBlock){
           //already fully unlocked
         } else {
           uint256 duration = pending[_user][i].endBlock.sub(pending[_user][i].startBlock);
