@@ -125,6 +125,8 @@ contract MasterChef is Ownable, ReentrancyGuard {
 
       if (newStartBlock == 0) newStartBlock = block.number;
 
+      startBlock = newStartBlock;
+
       uint256 blockPerWeek = blockPerDay * 7;
 
       uint64[4] memory _emissionAmounts = [5 ether, 4 ether, 3 ether, 2 ether];
@@ -635,6 +637,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
             delete emissionScheduleArray[i];
         }
         emissionScheduleLatest = 0;
+        startBlock = _startBlock;
 
         for (uint256 i = 0; i < _emissionAmounts.length; i++){
             emissionScheduleArray[i] = EmissionSchedule(_emissionAmounts[i], _startBlock + _emissionDelays[i], false);
