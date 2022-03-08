@@ -47,6 +47,12 @@ describe("MasterChef", function () {
     const SushiVault = await ethers.getContractFactory("MockSushiVault");
     mockVault = await SushiVault.deploy(mockVaultAddresses, 0, false, true, [], [], [], [], [], 1000, 0, 9990, 10000, accounts[0].address)
     await mockVault.deployed()
+
+    await (await masterChef.updateEmissionRateSchedule(
+      100,
+      ["5000000000000000000", "4000000000000000000", "3000000000000000000", "2000000000000000000"],
+      [0, 100, 200, 300])
+    ).wait()
   }
 
   it("shoud add a new vault", async function () {
@@ -127,6 +133,24 @@ describe("MasterChef", function () {
     expect(unlockedTokensAfterClaim.toString()).to.equal("0")
     expect(userBalance.toString()).to.equal(beforeUserBalance.add(lockedTokensBeforeClaim.div(2)).toString())
     expect(penaltyBalance.toString()).to.equal(beforePenaltyBalance.add(lockedTokensBeforeClaim.div(2)).toString())
+  });
+
+  it("shoud update emission rate", async function () {
+    await init()
+
+    await (await masterChef.updateEmissionRateSchedule(
+      100,
+      ["5000000000000000000", "4000000000000000000", "3000000000000000000", "2000000000000000000"],
+      [0, 100, 200, 300])
+    ).wait()
+
+    //get emission rate
+    let emissionStart = await masterChef.tokensPerBlock()
+
+    await mineBlocks(101)
+    await (await masterChef.deposit(0, 0)).wait()
+
+
   });
 
   // Since we need to mine 3,888,000 blocks to run this test, we skip it most of the time

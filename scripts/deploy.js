@@ -7,9 +7,7 @@ let govAddress = '0xA1982835170d0C2ba789370918F19122D63943A2'
 let rewardsAddress = '0x2CAA7b86767969048029c27C1A62612c980eB4b8' //treasury
 let deadAddress = '0x000000000000000000000000000000000000dEaD'
 
-let xPolycubRewardFakeToken = '';
-
-const START_BLOCK = 25575000;
+const START_BLOCK = 25616000;
 
 async function main() {
   const Token = await ethers.getContractFactory("POLYCUB");
@@ -32,28 +30,29 @@ async function main() {
   // let transferOwnership = await token.transferOwnership(masterChef.address)
   // await transferOwnership.wait();
 
-  //change pealty address
+  // change pealty address
   // let setPenaltyAddress = await masterChef.setPenaltyAddress(staker.address);
   // await setPenaltyAddress.wait()
 
-  token = await Token.attach("0xebf68f5d50ea36a6b63c5d5bee45476087c130cc");
-  masterChef = await MasterChef.attach("0x84bd9703F42AEaf956c93Ab2e42404934a7B3396");
+  masterChef = await MasterChef.attach("0xef79881df640b42bda6a84ac9435611ec6bb51a4");
 
-  // await deployNativeVaults(masterChef.address, masterChef)
+  await deployNativeVaults(masterChef.address, masterChef)
   // await deploySushiVaults(token.address, masterChef.address, masterChef)
-  await deployCurveVaults(masterChef.address, masterChef)
+  // await deployCurveVaults(masterChef.address, masterChef)
 }
 
 async function deployNativeVaults(masterChef, masterChefInstance){
-  let vaults = [{
-    name: "polycub-usdc",
-    want: "0x401ffaedee53fb2bc5b21cb6f6d115a3ae6c6b80",
-    allocPoints: 150
-  }, {
-    name: "polycub-weth",
-    want: "0x4aCb93B9DBEd73C2aB2997A4BDe6460AE086Aac6",
-    allocPoints: 150
-  }, {
+  let vaults = [
+  //   {
+  //   name: "polycub-usdc",
+  //   want: "0x5AeFd5C04ed6DBd856A5aeB691eFcc80c0aB7472",
+  //   allocPoints: 150
+  // }, {
+  //   name: "polycub-weth",
+  //   want: "0xC9ba162d07d762Ad4c2a759cf806F8650b6C9A93",
+  //   allocPoints: 150
+  // },
+  {
     name: "pleo-matic",
     want: "0xf8095Ffd24F02BD8aEDC96e5A3617310815cC4C7",
     allocPoints: 100
@@ -153,7 +152,8 @@ async function deploySushiVaults(token, masterChef, masterChefInstance){
     sushiFarm, sushiRouter, rewardsAddress, deadAddress
   ]
 
-  let vaults = [{
+  let vaults = [
+    {
     name: "SUSHI-WETH-WBTC",
     addresses: weth_wbtc_addresses,
     pid: 3,
@@ -170,7 +170,8 @@ async function deploySushiVaults(token, masterChef, masterChefInstance){
     withdrawFeeFactor: 10000,
     compoundingAddress: govAddress,
     allocPoints: 75
-  }, {
+  },
+  {
     name: "SUSHI-WETH-DAI",
     addresses: weth_dai_addresses,
     pid: 5,

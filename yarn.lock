@@ -713,6 +713,11 @@
     "node-fetch" "^2.6.0"
     "semver" "^6.3.0"
 
+"@openzeppelin/contracts@^4.5.0":
+  "integrity" "sha512-fdkzKPYMjrRiPK6K4y64e6GzULR7R7RwxSigHS8DDp7aWDeoReqsQI+cxHV1UuhAqX69L1lAaWDxenfP+xiqzA=="
+  "resolved" "https://registry.npmjs.org/@openzeppelin/contracts/-/contracts-4.5.0.tgz"
+  "version" "4.5.0"
+
 "@sentry/core@5.30.0":
   "integrity" "sha512-TmfrII8w1PQZSZgPpUESqjB+jC6MvZJZdLtE/0hZ+SrnKhW3x5WlYLvTXZpcWePYBku7rl2wn1RZu6uT0qCTeg=="
   "resolved" "https://registry.npmjs.org/@sentry/core/-/core-5.30.0.tgz"
