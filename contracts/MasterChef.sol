@@ -366,7 +366,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
             block.number.sub(lockupPeriodBlocks).sub(pending[msg.sender][i].startBlock) : 0;
           uint256 unlockedAmount = unlockedBlocks.mul(amountPerBlock);
           //remaining locked tokens
-          sumLocked = sumLocked.add(pending[msg.sender][i].amount.sub(unlockedAmount.add(pending[msg.sender][i].alreadyClaimed)));
+          sumLocked = sumLocked.add(pending[msg.sender][i].amount.sub(unlockedAmount));
 
           sumUnlocked = sumUnlocked.add(unlockedAmount.sub(pending[msg.sender][i].alreadyClaimed));
           pending[msg.sender][i].alreadyClaimed = pending[msg.sender][i].alreadyClaimed.add(unlockedAmount);
