@@ -369,7 +369,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
           sumLocked = sumLocked.add(pending[msg.sender][i].amount.sub(unlockedAmount));
 
           sumUnlocked = sumUnlocked.add(unlockedAmount.sub(pending[msg.sender][i].alreadyClaimed));
-          pending[msg.sender][i].alreadyClaimed = pending[msg.sender][i].alreadyClaimed.add(unlockedAmount);
+          pending[msg.sender][i].alreadyClaimed = unlockedAmount;
 
           //if we are also claiming locked rewards, delete every element
           if (_claimLocked){
