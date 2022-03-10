@@ -35,7 +35,7 @@ contract CurveVaultGovernance {
   function call(uint value, string memory signature, bytes memory data) external onlyGov {
     require(signature != "inCaseTokensGetStuck(address,uint256,address)", "Cannot use call for inCaseTokensGetStuck");
 
-    bytes32 txHash = keccak256(abi.encode(vaut, value, signature, data, eta));
+    bytes32 txHash = keccak256(abi.encode(vaut, value, signature, data));
 
     bytes memory callData;
 
