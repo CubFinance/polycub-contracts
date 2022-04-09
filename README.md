@@ -23,26 +23,20 @@ yarn install or npm install
 ```
 # This project demonstrates an advanced Hardhat use case, integrating other tools commonly used alongside Hardhat in the ecosystem.
 
-Try running some of the following tasks:
-
 ```shell
-npx hardhat accounts
-npx hardhat compile
-npx hardhat clean
-npx hardhat test
-npx hardhat node
-npx hardhat help
-REPORT_GAS=true npx hardhat test
-npx hardhat coverage
-npx hardhat run scripts/deploy.ts
-TS_NODE_FILES=true npx ts-node scripts/deploy.ts
-npx eslint '**/*.{js,ts}'
-npx eslint '**/*.{js,ts}' --fix
-npx prettier '**/*.{json,sol,md}' --check
-npx prettier '**/*.{json,sol,md}' --write
-npx solhint 'contracts/**/*.sol'
-npx solhint 'contracts/**/*.sol' --fix
+## To run locally
+`npx hardhat compile` to compile the contract
+
+`npx hardhat node` to start a local node
+
+Open another terminal
+
+`npx hardhat run --network localhost scripts/deploy.js` to deploy
+
+`npx hardhat test test/test.js` to test contract
 ```
+
+
 
 # Deployed Contract
 # polycub
