@@ -1330,7 +1330,7 @@ contract NativeVault {
     }
 
     // Receives new deposits from user
-    function deposit(address _userAddress, uint256 _wantAmt)
+    function deposit(uint256 _wantAmt)
         public
         virtual
         onlyOwner
@@ -1357,7 +1357,7 @@ contract NativeVault {
     }
 
 
-    function withdraw(address _userAddress, uint256 _wantAmt)
+    function withdraw(uint256 _wantAmt)
         public
         virtual
         onlyOwner

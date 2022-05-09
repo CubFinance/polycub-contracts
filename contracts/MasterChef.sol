@@ -10,8 +10,6 @@ import "./interfaces/ReentrancyGuard.sol";
 import "./interfaces/IStrategy.sol";
 import "./interfaces/IToken.sol";
 
-import "hardhat/console.sol";
-
 /// @title MasterChef yield farming contract
 /// @author CubFinance, @fbsloXBT
 
@@ -22,7 +20,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
     /// @notice Address of the reward token
     address public rewardToken;
     /// @notice Maximum number of issued tokens, 24.7M issues, 1.3M minted at launch (200k dev fund, 1M airdrop, 100k initial liquidity) = 26M total
-    uint256 public maxIssued = 24700000000000000000000000;
+    uint256 public maxIssued = 24700000 ether;
 
     /// @notice Info of each user.
     struct UserInfo {
@@ -52,7 +50,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
     }
 
     /// @notice Number of tokens issued per block
-    uint256 public tokensPerBlock = 5000000000000000;
+    uint256 public tokensPerBlock = 0;
     /// @notice Block number from where inflation schedule is counted
     uint256 public startBlock = 0;
 
@@ -88,6 +86,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
     struct EmissionSchedule {
       uint256 amount;
       uint256 startBlock;
+      bool alreadyUpdated;
     }
     /// @notice Array stroing EmissionSchedule structs that are string information about reward emissions
     EmissionSchedule[] public emissionScheduleArray;
@@ -118,6 +117,9 @@ contract MasterChef is Ownable, ReentrancyGuard {
      * @param newRewardToken The address of the reward token
      */
     constructor(address newPenaltyAddress, uint256 newStartBlock, address newRewardToken) public {
+      require(newPenaltyAddress != address(0), '!address(0)');
+      require(newRewardToken != address(0), '!address(0)');
+
       penaltyAddress = newPenaltyAddress;
       rewardToken = newRewardToken;
 
@@ -129,7 +131,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
       uint256[4] memory _emissionDelays = [0 * blockPerWeek, 1 * blockPerWeek, 2 * blockPerWeek, 3 * blockPerWeek];
 
       for (uint256 i = 0; i < _emissionAmounts.length; i++){
-        emissionScheduleArray.push(EmissionSchedule(_emissionAmounts[i], newStartBlock + _emissionDelays[i]));
+        emissionScheduleArray.push(EmissionSchedule(_emissionAmounts[i], newStartBlock + _emissionDelays[i], false));
       }
     }
 
@@ -300,8 +302,9 @@ contract MasterChef is Ownable, ReentrancyGuard {
             totalIssuedTokens += tokensReward;
             IToken(rewardToken).mint(address(this), tokensReward);
         } else if (totalIssuedTokens < maxIssued && totalIssuedTokens + tokensReward > maxIssued) {
-            totalIssuedTokens += tokensReward;
-            IToken(rewardToken).mint(address(this), maxIssued - totalIssuedTokens);
+            tokensReward = maxIssued - totalIssuedTokens;
+            totalIssuedTokens = maxIssued;
+            IToken(rewardToken).mint(address(this), tokensReward);
         }
 
         pool.accTokensPerShare = pool.accTokensPerShare.add(
@@ -318,8 +321,9 @@ contract MasterChef is Ownable, ReentrancyGuard {
       if (block.number < startBlock + (blockPerDay * 7 * 4)){
         if (emissionScheduleArray.length >= emissionScheduleLatest + 1){
           //update emission schedule
-          if (emissionScheduleArray[emissionScheduleLatest].startBlock <= block.number){
+          if (emissionScheduleArray[emissionScheduleLatest].startBlock <= block.number && !emissionScheduleArray[emissionScheduleLatest].alreadyUpdated){
             tokensPerBlock = emissionScheduleArray[emissionScheduleLatest].amount;
+            emissionScheduleArray[emissionScheduleLatest].alreadyUpdated = true;
             emissionScheduleLatest += 1;
             emit UpdateEmissionRate(tokensPerBlock);
           }
@@ -345,17 +349,19 @@ contract MasterChef is Ownable, ReentrancyGuard {
 
       if (_limit == 0) _limit = pending[msg.sender].length;
 
+      if (_limit > pending[msg.sender].length) _limit = pending[msg.sender].length;
+
       for (uint256 i = 0; i < _limit; i++){
         //already fully unlocked
-        if (block.number.sub(pending[msg.sender][i].endBlock) >= lockupPeriodBlocks){
+        if (block.number.sub(lockupPeriodBlocks) >= pending[msg.sender][i].endBlock){
           sumUnlocked = sumUnlocked.add(pending[msg.sender][i].amount.sub(pending[msg.sender][i].alreadyClaimed));
           //reset the fully claimed element
           delete pending[msg.sender][i];
         } else {
           uint256 duration = pending[msg.sender][i].endBlock.sub(pending[msg.sender][i].startBlock);
           uint256 amountPerBlock = pending[msg.sender][i].amount.div(duration);
-          uint256 unlockedBlocks = block.number > pending[msg.sender][i].startBlock.add(lockupPeriodBlocks)
-            ? block.number.sub(pending[msg.sender][i].startBlock.add(lockupPeriodBlocks)) : 0;
+          uint256 unlockedBlocks = block.number > (lockupPeriodBlocks + pending[msg.sender][i].startBlock) ?
+            block.number.sub(lockupPeriodBlocks).sub(pending[msg.sender][i].startBlock) : 0;
           uint256 unlockedAmount = unlockedBlocks.mul(amountPerBlock);
           //remaining locked tokens
           sumLocked = sumLocked.add(pending[msg.sender][i].amount.sub(unlockedAmount.add(pending[msg.sender][i].alreadyClaimed)));
@@ -405,17 +411,17 @@ contract MasterChef is Ownable, ReentrancyGuard {
     function unlockedTokens(address _user) external view returns (uint256) {
       uint256 sumUnlocked;
 
-      for (uint256 i = 0; i < pending[msg.sender].length; i++){
+      for (uint256 i = 0; i < pending[_user].length; i++){
         //already fully unlocked
-        if (block.number.sub(pending[msg.sender][i].endBlock) >= lockupPeriodBlocks){
-          sumUnlocked += pending[msg.sender][i].amount - pending[msg.sender][i].alreadyClaimed;
+        if (block.number.sub(lockupPeriodBlocks) >= pending[_user][i].endBlock){
+          sumUnlocked += pending[_user][i].amount - pending[_user][i].alreadyClaimed;
         } else {
-          uint256 duration = pending[msg.sender][i].endBlock.sub(pending[msg.sender][i].startBlock);
-          uint256 amountPerBlock = pending[msg.sender][i].amount.div(duration);
-          uint256 unlockedBlocks = block.number > pending[msg.sender][i].startBlock.add(lockupPeriodBlocks)
-            ? block.number.sub(pending[msg.sender][i].startBlock.add(lockupPeriodBlocks)) : 0;
+          uint256 duration = pending[_user][i].endBlock.sub(pending[_user][i].startBlock);
+          uint256 amountPerBlock = pending[_user][i].amount.div(duration);
+          uint256 unlockedBlocks = block.number > (lockupPeriodBlocks + pending[msg.sender][i].startBlock) ?
+            block.number.sub(lockupPeriodBlocks).sub(pending[msg.sender][i].startBlock) : 0;
           uint256 unlockedAmount = unlockedBlocks.mul(amountPerBlock);
-          sumUnlocked += unlockedAmount.sub(pending[msg.sender][i].alreadyClaimed);
+          sumUnlocked += unlockedAmount.sub(pending[_user][i].alreadyClaimed);
         }
       }
 
@@ -429,16 +435,16 @@ contract MasterChef is Ownable, ReentrancyGuard {
     function lockedTokens(address _user) external view returns (uint256) {
       uint256 sumLocked = 0;
 
-      for (uint256 i = 0; i < pending[msg.sender].length; i++){
-        if (block.number.sub(pending[msg.sender][i].endBlock) >= lockupPeriodBlocks){
+      for (uint256 i = 0; i < pending[_user].length; i++){
+        if (block.number.sub(lockupPeriodBlocks) >= pending[_user][i].endBlock){
           //already fully unlocked
         } else {
-          uint256 duration = pending[msg.sender][i].endBlock.sub(pending[msg.sender][i].startBlock);
-          uint256 amountPerBlock = pending[msg.sender][i].amount.div(duration);
-          uint256 unlockedBlocks = block.number > pending[msg.sender][i].startBlock.add(lockupPeriodBlocks)
-            ? block.number.sub(pending[msg.sender][i].startBlock.add(lockupPeriodBlocks)) : 0;
+          uint256 duration = pending[_user][i].endBlock.sub(pending[_user][i].startBlock);
+          uint256 amountPerBlock = pending[_user][i].amount.div(duration);
+          uint256 unlockedBlocks = block.number > (lockupPeriodBlocks + pending[msg.sender][i].startBlock) ?
+            block.number.sub(lockupPeriodBlocks).sub(pending[msg.sender][i].startBlock) : 0;
           uint256 unlockedAmount = unlockedBlocks.mul(amountPerBlock);
-          sumLocked += pending[msg.sender][i].amount.sub(unlockedAmount.add(pending[msg.sender][i].alreadyClaimed));
+          sumLocked += pending[_user][i].amount.sub(unlockedAmount.add(pending[_user][i].alreadyClaimed));
         }
       }
 
@@ -487,7 +493,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
 
             pool.want.safeIncreaseAllowance(pool.strat, _wantAmt);
             uint256 sharesAdded =
-                IStrategy(poolInfo[_pid].strat).deposit(msg.sender, _wantAmt);
+                IStrategy(poolInfo[_pid].strat).deposit(_wantAmt);
             user.shares = user.shares.add(sharesAdded);
         }
         lastClaim[msg.sender] = block.number;
@@ -533,7 +539,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
         }
         if (_wantAmt > 0) {
             uint256 sharesRemoved =
-                IStrategy(poolInfo[_pid].strat).withdraw(msg.sender, _wantAmt);
+                IStrategy(poolInfo[_pid].strat).withdraw(_wantAmt);
 
             if (sharesRemoved > user.shares) {
                 user.shares = 0;
@@ -573,7 +579,12 @@ contract MasterChef is Ownable, ReentrancyGuard {
         uint256 sharesTotal = IStrategy(poolInfo[_pid].strat).sharesTotal();
         uint256 amount = user.shares.mul(wantLockedTotal).div(sharesTotal);
 
-        IStrategy(poolInfo[_pid].strat).withdraw(msg.sender, amount);
+        IStrategy(poolInfo[_pid].strat).withdraw(amount);
+
+        uint256 thisBalance = pool.want.balanceOf(address(this));
+        if (amount > thisBalance){
+          amount = thisBalance;
+        }
 
         pool.want.safeTransfer(address(msg.sender), amount);
         emit EmergencyWithdraw(msg.sender, _pid, amount);
@@ -626,7 +637,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
         emissionScheduleLatest = 0;
 
         for (uint256 i = 0; i < _emissionAmounts.length; i++){
-            emissionScheduleArray[i] = EmissionSchedule(_emissionAmounts[i], _startBlock + _emissionDelays[i]);
+            emissionScheduleArray[i] = EmissionSchedule(_emissionAmounts[i], _startBlock + _emissionDelays[i], false);
         }
     }
 
@@ -656,6 +667,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
      * @param _newPenaltyAddress new penalty address
      */
     function setPenaltyAddress(address _newPenaltyAddress) external onlyOwner {
+      require(_newPenaltyAddress != address(0), '!address(0)');
       penaltyAddress = _newPenaltyAddress;
       emit updatePenaltyAddress(_newPenaltyAddress);
     }
