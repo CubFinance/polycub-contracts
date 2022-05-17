@@ -110,6 +110,12 @@ contract Read {
       //already fully unlocked
       if (block.number.sub(lockupPeriodBlocks) >= endBlock){
         sumUnlocked += amount - alreadyClaimed;
+      } else {
+        //not yet fully unlocked
+        uint256 duration = endBlock.sub(startBlock) > 0 ? endBlock.sub(startBlock) : 1;
+        uint256 amountPerBlock = amount / duration;
+        uint256 unlocked = (block.number - startBlock) * amountPerBlock;
+        sumUnlocked += unlocked - alreadyClaimed;
       }
     }
 
@@ -131,10 +137,15 @@ contract Read {
       if (block.number.sub(lockupPeriodBlocks) >= endBlock){
         //already fully unlocked
       } else {
-        uint256 duration = endBlock.sub(startBlock) > 0 ? endBlock.sub(startBlock) : 1;
-        uint256 amountPerBlock = amount / duration;
-        uint256 unlocked = (block.number - startBlock) * amountPerBlock;
-        sumLocked += amount - unlocked;
+        if (block.number - startBlock < lockupPeriodBlocks){
+          //nothing yet unlocked
+          sumLocked += amount;
+        } else {
+          uint256 duration = endBlock.sub(startBlock) > 0 ? endBlock.sub(startBlock) : 1;
+          uint256 amountPerBlock = amount / duration;
+          uint256 unlocked = (block.number - startBlock) * amountPerBlock;
+          sumLocked += amount - unlocked;
+        }
       }
     }
 
