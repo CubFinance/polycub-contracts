@@ -81,10 +81,18 @@ contract Read {
   using SafeMath for uint;
 
   MasterChef public target;
-  uint256 public lockupPeriodBlocks = 3888000;
+  address public admin;
+  uint256 public lockupPeriodBlocks = 1296000;
 
   constructor() public {
     target = MasterChef(0xEF79881DF640B42bda6A84aC9435611Ec6Bb51A4);
+    admin = msg.sender;
+  }
+
+  function set(uint256 _new, address _admin) external {
+    require(msg.sender == admin, "!admin");
+    lockupPeriodBlocks = _new;
+    admin = _admin;
   }
 
   /**
@@ -124,11 +132,9 @@ contract Read {
         //already fully unlocked
       } else {
         uint256 duration = endBlock.sub(startBlock) > 0 ? endBlock.sub(startBlock) : 1;
-        uint256 amountPerBlock = amount.div(duration);
-        uint256 unlockedBlocks = block.number > (lockupPeriodBlocks + startBlock) ?
-          block.number.sub(lockupPeriodBlocks).sub(startBlock) : 0;
-        uint256 unlockedAmount = unlockedBlocks.mul(amountPerBlock);
-        sumLocked += amount.sub(unlockedAmount.add(alreadyClaimed));
+        uint256 amountPerBlock = amount / duration;
+        uint256 unlocked = (block.number - startBlock) * amountPerBlock;
+        sumLocked += amount - unlocked;
       }
     }
 
